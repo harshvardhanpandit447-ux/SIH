@@ -1,0 +1,135 @@
+{
+  "brand": {
+    "name": "AGRO VISION",
+    "tagline": "Smart Farming. Better Markets. Better Returns."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "howItWorks": "How It Works",
+    "features": "Features",
+    "marketIntelligence": "Market Intelligence",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "demoLogin": "Quick Demo Login"
+  },
+  "hero": {
+    "badge": "Agri-Tech Market Intelligence & Aggregation Platform",
+    "headline": "From Better Insights to Better Returns.",
+    "subtext": "Connecting farmers, FPOs, and verified buyers through intelligent market information, AI-powered quality assessment, and transparent transactions.",
+    "getStarted": "Get Started",
+    "howItWorks": "How It Works",
+    "activeFarmers": "10,000+ Farmers",
+    "fposPartnered": "45+ Verified FPOs",
+    "puneCluster": "Pune Agri Hub Live"
+  },
+  "problems": {
+    "title": "The Agricultural Market Challenge",
+    "subtitle": "Why traditional farm-gate marketing reduces farmer net returns",
+    "p1_title": "Fragmented Market Prices",
+    "p1_desc": "Farmers lack real-time mandi rate visibility, selling blindly at distress prices to local middlemen.",
+    "p2_title": "Limited Aggregation",
+    "p2_desc": "Small landholdings result in tiny produce volumes, depriving individual farmers of institutional pricing power.",
+    "p3_title": "Quality Uncertainty",
+    "p3_desc": "Subjective manual grading at mandis leads to unfair price deductions and frequent disputes.",
+    "p4_title": "Logistics & Storage Losses",
+    "p4_desc": "Poor post-harvest logistics and high cold storage costs erode up to 25% of the final sale value."
+  },
+  "solution": {
+    "badge": "One Platform. Three Key Stakeholders.",
+    "title": "A Transparent, Aggregation-First Workflow",
+    "subtitle": "Farmers never deal with buyers directly. FPOs aggregate, standardize, and trade with verified institutional buyers.",
+    "farmer_title": "Farmer",
+    "farmer_desc": "Inputs crop, expected quantity, and photos. Receives AI quality assessment and price predictions.",
+    "fpo_title": "FPO (Intermediary)",
+    "fpo_desc": "Aggregates farmer produce into certified trade lots, verifies quality, and negotiates with verified buyers.",
+    "buyer_title": "Verified Buyer",
+    "buyer_desc": "Posts procurement demands, matches certified FPO lots, negotiates transparent contracts, and deposits escrow."
+  },
+  "howItWorks": {
+    "title": "How AGRO VISION Works",
+    "subtitle": "A structured 5-step transaction lifecycle engineered for maximum net farmer returns",
+    "step1_title": "Farmer Adds Produce",
+    "step1_desc": "Farmer enters crop, expected quantity, harvest date, location, and photos inside the portal.",
+    "step2_title": "FPO Aggregates Produce",
+    "step2_desc": "The assigned FPO reviews incoming produce, physically verifies quality, and builds standardized trade lots.",
+    "step3_title": "AI + Market Intelligence",
+    "step3_desc": "System provides ML price predictions, seasonal trends, and calculates true Net Realisation.",
+    "step4_title": "FPO Matches Buyers",
+    "step4_desc": "Matching engine pairs aggregated FPO lots with verified institutional buyer procurement requirements.",
+    "step5_title": "Deal + Logistics + Payment",
+    "step5_desc": "FPO and buyer finalize bilateral contract with secured escrow, tracked transit, and automated farmer payouts."
+  },
+  "marketIntel": {
+    "title": "Market Intelligence & ML Price Predictor",
+    "subtitle": "Real-time Pune district APMC price discovery and machine learning forecast models",
+    "currentPrice": "Current Mandi Price",
+    "predictedPrice": "ML Predicted Price Range",
+    "confidence": "Prediction Confidence",
+    "recommendation": "Recommendation",
+    "sellNow": "Sell Now",
+    "wait": "Wait (7-10 Days)",
+    "store": "Store in Warehouse",
+    "netRealisation": "Net Realisation",
+    "calculatorTitle": "Net Realisation Calculator",
+    "grossPrice": "Gross Selling Price",
+    "transportCost": "Transportation Cost",
+    "storageCost": "Storage Cost",
+    "handlingCost": "Handling & Loading",
+    "spoilageRisk": "Expected Spoilage / Loss",
+    "netInHand": "Actual In-Hand Realisation"
+  },
+  "aiQuality": {
+    "title": "AI Produce Quality Assessment",
+    "subtitle": "Computer vision assessment analyzing size, color, surface defects, and rot indicators",
+    "uploadPrompt": "Upload or select produce photo for AI inspection",
+    "grade": "Quality Grade",
+    "confidence": "AI Confidence Score",
+    "disclaimer": "Notice: AI grading is a preliminary assessment. Physical inspection by your assigned FPO is required prior to lot aggregation.",
+    "runTest": "Run AI Inspection",
+    "inspecting": "Analyzing image via Computer Vision..."
+  },
+  "trust": {
+    "title": "Trust & Verification Architecture",
+    "subtitle": "Every FPO and Buyer maintains an algorithmic Trust Score (0-100) based on verified transactions",
+    "scoreLabel": "Trust Score",
+    "verifiedFpc": "Officially Verified FPC",
+    "criteria1": "Identity & GSTIN Verification",
+    "criteria2": "On-time Delivery & Quantity Fulfillment",
+    "criteria3": "Escrow Settlement & Payment Reliability",
+    "criteria4": "Zero Quality Dispute Records"
+  },
+  "roles": {
+    "farmer": "Farmer",
+    "fpo": "FPO / Farmer Producer Company",
+    "buyer": "Verified Buyer"
+  },
+  "common": {
+    "quintal": "Quintal",
+    "perQuintal": "/ Quintal",
+    "rupee": "₹",
+    "status": "Status",
+    "date": "Date",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "save": "Save",
+    "confirm": "Confirm",
+    "all": "All",
+    "demoBadge": "Demo Ecosystem (Pune District)"
+  },
+  "footer": {
+    "desc": "Empowering Indian agriculture through transparent FPO aggregation, AI-driven quality grading, and predictive market intelligence.",
+    "quickLinks": "Platform",
+    "forFarmers": "For Farmers",
+    "forFpos": "For FPOs",
+    "forBuyers": "For Buyers",
+    "support": "Support & Legal",
+    "copyright": "© 2026 AGRO VISION. All rights reserved."
+  }
+}

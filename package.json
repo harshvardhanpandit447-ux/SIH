@@ -1,0 +1,13 @@
+{
+  "name": "agrovision",
+  "version": "1.0.0",
+  "description": "AGRO VISION - Smart Farming. Better Markets. Better Returns.",
+  "scripts": {
+    "dev:server": "cd server && node server.js",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build"
+  },
+  "keywords": ["agriculture", "market-intelligence", "fpo", "farmer", "pune"],
+  "author": "AGRO VISION",
+  "license": "ISC"
+}
