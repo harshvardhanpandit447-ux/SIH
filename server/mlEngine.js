@@ -496,6 +496,7 @@ function predictFuturePrice(commodityName, mandi = 'Pune Gultekdi', horizonWeeks
   ];
 
   return {
+    success: true,
     commodity: profile.name,
     cropKey: key,
     shortName: profile.shortName,
@@ -520,7 +521,7 @@ function predictFuturePrice(commodityName, mandi = 'Pune Gultekdi', horizonWeeks
     },
     holdingCostEstimate: Math.round(totalHoldingCost),
     netGainEstimate: Math.round(netGain),
-    cropAttributes: profile.cropAttributes,
+    cropAttributes: { icon: profile.icon, ...profile.cropAttributes },
     storageEconomics: {
       storageFee,
       shrinkageLoss,
@@ -789,6 +790,7 @@ function assessProduceQuality(commodityName = 'onion', imageInfo = {}) {
   }
 
   return {
+    success: true,
     commodity: commodityName,
     grade,
     confidence,
