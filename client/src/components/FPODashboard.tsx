@@ -17,7 +17,7 @@ export const FPODashboard: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState<'requests' | 'lots' | 'matches' | 'offers' | 'transactions'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'lots' | 'matches' | 'offers' | 'transactions' | 'disputes'>('requests');
   const [data, setData] = useState<any>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -203,7 +203,8 @@ export const FPODashboard: React.FC = () => {
           { id: 'lots', label: language === 'mr' ? '२. एकत्रित लॉट्स' : '2. Aggregated Lots', icon: Layers },
           { id: 'matches', label: language === 'mr' ? '३. खरेदीदार जुळवणी' : '3. Buyer Matching', icon: Search },
           { id: 'offers', label: language === 'mr' ? '४. ऑफर्स व वाटाघाटी' : '4. Offers', icon: ArrowRightLeft },
-          { id: 'transactions', label: language === 'mr' ? '५. सौदे व एस्क्रो' : '5. Deals & Escrow', icon: Truck }
+          { id: 'transactions', label: language === 'mr' ? '५. सौदे व एस्क्रो' : '5. Deals & Escrow', icon: Truck },
+          { id: 'disputes', label: language === 'mr' ? '६. तक्रार निवारण' : '6. Disputes & Claims', icon: Sparkles }
         ].map(tab => {
           const Icon = tab.icon;
           return (
@@ -568,19 +569,37 @@ export const FPODashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Logistics Tracking Strip */}
-            <div className="p-4 rounded-2xl bg-agro-bg border border-agro-light flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-agro-mint text-agro-primary flex items-center justify-center shrink-0">
-                <Truck className="w-5 h-5" />
-              </div>
-              <div className="text-xs">
-                <div className="font-bold text-agro-dark">
-                  Mahalaxmi Agro Logistics (MH-14-CW-4921)
+            {/* Logistics Tracking Strip & Milestone Progress */}
+            <div className="p-5 rounded-2xl bg-agro-bg border border-agro-light space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-agro-mint text-agro-primary flex items-center justify-center shrink-0">
+                  <Truck className="w-5 h-5" />
                 </div>
-                <div className="text-gray-500">
-                  {language === 'mr'
-                    ? 'स्थिती: नारायणगाव हब येथे माल भरला • गुलटेकडी मार्केट यार्डकडे रवाना (अपेक्षित वेळ: संध्याकाळी ६:००)'
-                    : 'Status: Loaded at Narayangaon Hub • In Transit to Gultekdi Mandi (ETA: 6:00 PM)'}
+                <div className="text-xs">
+                  <div className="font-bold text-agro-dark">
+                    Mahalaxmi Agro Logistics (MH-14-CW-4921)
+                  </div>
+                  <div className="text-gray-500">
+                    {language === 'mr'
+                      ? 'स्थिती: नारायणगाव हब येथे माल भरला • गुलटेकडी मार्केट यार्डकडे रवाना (अपेक्षित वेळ: संध्याकाळी ६:००)'
+                      : 'Status: Loaded at Narayangaon Hub • In Transit to Gultekdi Mandi (ETA: 6:00 PM)'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone Step Tracker */}
+              <div className="grid grid-cols-4 gap-2 pt-2 text-center text-xs">
+                <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 font-bold">
+                  ✓ 1. Dispatched
+                </div>
+                <div className="p-2 rounded-xl bg-blue-100 text-blue-800 font-bold animate-pulse">
+                  ● 2. In Transit
+                </div>
+                <div className="p-2 rounded-xl bg-gray-100 text-gray-500">
+                  3. Hub Arrival
+                </div>
+                <div className="p-2 rounded-xl bg-gray-100 text-gray-500">
+                  4. Escrow Settled
                 </div>
               </div>
             </div>
@@ -639,6 +658,50 @@ export const FPODashboard: React.FC = () => {
       )}
 
       {/* ===================================================================
+          TAB 6: DISPUTES & RESOLUTION
+          =================================================================== */}
+      {activeTab === 'disputes' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black text-agro-text">
+              {language === 'mr' ? 'खरेदीदार तक्रारी व गुणवत्ता पडताळणी' : 'Buyer Claims & Quality Verification'}
+            </h3>
+            <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+              MSAMB Tribunal Protected
+            </span>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 border border-agro-light shadow-sm space-y-4">
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-bold text-amber-900 uppercase">Active Dispute (Lot LOT-PUN-ON-2026-01)</span>
+                  <p className="text-amber-800 mt-1">
+                    Buyer raised moisture variance claim: <em>"Slight moisture variance on top layer bags (3% above Grade A spec)"</em>
+                  </p>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
+                  UNDER REVIEW
+                </span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-amber-200 text-gray-600 flex justify-between">
+                <span>Claimed Amount: <strong>₹6,000</strong></span>
+                <span>Arbitrator: <strong>MSAMB Market Regulator</strong></span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-agro-bg border border-agro-light text-xs text-gray-600">
+              <div className="font-bold text-agro-dark mb-1">FPO Counter Evidence:</div>
+              <p>
+                Pre-dispatch AI grading certificate generated at Narayangaon Hub confirmed 92% Grade A compliance with dry neck integrity.
+                Submitted to state tribunal for full escrow release.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================
           MODAL: CREATE AGGREGATED LOT
           =================================================================== */}
       {isLotModalOpen && (
@@ -671,9 +734,13 @@ export const FPODashboard: React.FC = () => {
                   onChange={e => setLotCommodity(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold bg-white outline-none focus:border-agro-primary"
                 >
-                  <option value="Onion">{language === 'mr' ? 'कांदा (Onion)' : 'Onion (कांदा)'}</option>
-                  <option value="Tomato">{language === 'mr' ? 'टोमॅटो (Tomato)' : 'Tomato (टोमॅटो)'}</option>
-                  <option value="Grapes">{language === 'mr' ? 'द्राक्षे (Grapes)' : 'Grapes (द्राक्षे)'}</option>
+                  <option value="Onion">{language === 'mr' ? '🧅 कांदा (Onion)' : '🧅 Onion (कांदा)'}</option>
+                  <option value="Tomato">{language === 'mr' ? '🍅 टोमॅटो (Tomato)' : '🍅 Tomato (टोमॅटो)'}</option>
+                  <option value="Grapes">{language === 'mr' ? '🍇 द्राक्षे (Grapes)' : '🍇 Grapes (द्राक्षे)'}</option>
+                  <option value="Pomegranate">{language === 'mr' ? '🍎 डाळिंब (Pomegranate)' : '🍎 Pomegranate (डाळिंब)'}</option>
+                  <option value="Soybean">{language === 'mr' ? '🌱 सोयाबीन (Soybean)' : '🌱 Soybean (सोयाबीन)'}</option>
+                  <option value="Cabbage">{language === 'mr' ? '🥬 कोबी (Cabbage)' : '🥬 Cabbage (कोबी)'}</option>
+                  <option value="Sugarcane">{language === 'mr' ? '🎋 ऊस (Sugarcane)' : '🎋 Sugarcane (ऊस)'}</option>
                 </select>
               </div>
 

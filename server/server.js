@@ -5,6 +5,7 @@
  * Farmers never interact directly with buyers.
  */
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./database');
@@ -12,6 +13,8 @@ const {
   COMMODITY_PROFILES,
   predictFuturePrice,
   calculateNetRealisation,
+  rankMarketsForProduce,
+  calculateEvidenceReputation,
   assessProduceQuality,
   calculateBuyerLotMatch
 } = require('./mlEngine');
@@ -36,7 +39,15 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     platform: 'AGRO VISION',
     tagline: 'Smart Farming. Better Markets. Better Returns.',
+    supabase: db.getStatus(),
     timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/supabase/status', (req, res) => {
+  res.json({
+    success: true,
+    ...db.getStatus()
   });
 });
 
@@ -536,6 +547,222 @@ app.get('/api/notifications/:userId', (req, res) => {
   const { userId } = req.params;
   const notifs = db.getCollection('notifications').filter(n => n.recipientId === userId || n.recipientId === 'usr_farmer_01');
   res.json(notifs);
+});
+
+/* ==========================================================================
+   MARKET RANKING & NET REALISATION DISCOVERY
+   ========================================================================== */
+app.get('/api/market/rankings', (req, res) => {
+  const { crop = 'Onion', quantity = 50, district = 'Pune', taluka = 'Junnar', storageDays = 0 } = req.query;
+  const result = rankMarketsForProduce({
+    crop,
+    quantity: Number(quantity) || 50,
+    originDistrict: district,
+    originTaluka: taluka,
+    storageDays: Number(storageDays) || 0
+  });
+  res.json({ success: true, ...result });
+});
+
+/* ==========================================================================
+   DISPUTE MANAGEMENT & ARBITRATION
+   ========================================================================== */
+// Get all disputes or filter by role/user
+app.get('/api/disputes', (req, res) => {
+  const { userId, role, status } = req.query;
+  let disputes = db.getCollection('disputes');
+
+  if (status) {
+    disputes = disputes.filter(d => d.status === status);
+  }
+  if (role === 'BUYER' && userId) {
+    disputes = disputes.filter(d => d.raisedBy === userId);
+  } else if (role === 'FPO' && userId) {
+    disputes = disputes.filter(d => d.againstUser === userId || d.raisedBy === userId);
+  } else if (role === 'FARMER' && userId) {
+    disputes = disputes.filter(d => d.raisedBy === userId || d.againstUser === userId);
+  }
+
+  res.json({ success: true, count: disputes.length, disputes });
+});
+
+// Raise a new dispute
+app.post('/api/disputes', (req, res) => {
+  const {
+    lotId,
+    transactionId,
+    raisedBy,
+    raisedByName,
+    raisedByRole,
+    againstUser,
+    againstUserName,
+    reason,
+    disputeCategory,
+    evidenceUrl,
+    claimedAmount
+  } = req.body;
+
+  if (!reason || !raisedBy) {
+    return res.status(400).json({ error: 'Dispute reason and raisedBy ID are required' });
+  }
+
+  const dispute = db.insert('disputes', {
+    lotId: lotId || 'lot_01',
+    lotNumber: req.body.lotNumber || 'LOT-PUN-ON-2026-01',
+    transactionId: transactionId || 'txn_01',
+    raisedBy,
+    raisedByName: raisedByName || 'Registered Stakeholder',
+    raisedByRole: raisedByRole || 'BUYER',
+    againstUser: againstUser || 'usr_fpo_01',
+    againstUserName: againstUserName || 'FPO / Supplier',
+    reason,
+    disputeCategory: disputeCategory || 'QUALITY_MISMATCH',
+    evidenceUrl: evidenceUrl || 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+    claimedAmount: Number(claimedAmount) || 5000,
+    status: 'OPEN',
+    resolutionNotes: 'Dispute registered in the AgroVision state arbitration portal. Under regulatory review.',
+    arbitratedBy: 'usr_admin_01'
+  });
+
+  // Log admin audit
+  db.insert('adminLogs', {
+    action: 'DISPUTE_FILED',
+    targetId: dispute.id,
+    performedBy: raisedByName || raisedBy,
+    details: { reason, claimedAmount, category: disputeCategory }
+  });
+
+  res.json({
+    success: true,
+    message: 'Dispute registered successfully. Assigned to MSAMB Market Regulator for arbitration.',
+    dispute
+  });
+});
+
+// Resolve or Arbitrate a dispute (Admin / MSAMB)
+app.patch('/api/disputes/:id/resolve', (req, res) => {
+  const { id } = req.params;
+  const { resolutionStatus, resolutionNotes, refundAmount, arbitratedBy } = req.body;
+
+  const dispute = db.findById('disputes', id);
+  if (!dispute) return res.status(404).json({ error: 'Dispute not found' });
+
+  const updated = db.updateById('disputes', id, {
+    status: resolutionStatus || 'RESOLVED_RELEASE',
+    resolutionNotes: resolutionNotes || 'Arbitrated by Market Regulator after inspecting FPO lot certification.',
+    refundAmount: refundAmount !== undefined ? Number(refundAmount) : 0,
+    arbitratedBy: arbitratedBy || 'usr_admin_01',
+    resolvedAt: new Date().toISOString()
+  });
+
+  // Log audit
+  db.insert('adminLogs', {
+    action: 'DISPUTE_ARBITRATED',
+    targetId: id,
+    performedBy: arbitratedBy || 'MSAMB Dispute Cell',
+    details: { resolutionStatus, resolutionNotes, refundAmount }
+  });
+
+  res.json({
+    success: true,
+    message: 'Dispute resolved and escrow settlement updated.',
+    dispute: updated
+  });
+});
+
+/* ==========================================================================
+   ADMIN & REGULATORY AUDIT ENDPOINTS
+   ========================================================================== */
+app.get('/api/admin/metrics', (req, res) => {
+  const users = db.getCollection('users');
+  const fpos = db.getCollection('fpos');
+  const produces = db.getCollection('produces');
+  const lots = db.getCollection('lots');
+  const transactions = db.getCollection('transactions');
+  const disputes = db.getCollection('disputes');
+  const marketPrices = db.getCollection('marketPrices');
+
+  const totalTradeVolume = transactions.reduce((acc, t) => acc + (t.grossTotal || 0), 0);
+  const totalQuantityTraded = transactions.reduce((acc, t) => acc + (t.quantity || 0), 0);
+  const activeEscrowAmount = transactions
+    .filter(t => t.farmerPayoutStatus === 'ESCROW_FUNDED' || t.dealStatus === 'IN_TRANSIT')
+    .reduce((acc, t) => acc + (t.grossTotal || 0), 0);
+  
+  const openDisputes = disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_ARBITRATION').length;
+
+  res.json({
+    success: true,
+    platform: 'AGRO VISION Regulatory & Network Operations Center',
+    metrics: {
+      registeredFarmers: users.filter(u => u.role === 'FARMER').length,
+      registeredFPOs: fpos.length,
+      verifiedBuyers: users.filter(u => u.role === 'BUYER').length,
+      totalProducesSubmitted: produces.length,
+      activeLots: lots.length,
+      completedTransactions: transactions.length,
+      totalTradeVolumeINR: totalTradeVolume,
+      totalQuantityQuintals: totalQuantityTraded,
+      activeEscrowSecuredINR: activeEscrowAmount,
+      openDisputesCount: openDisputes,
+      apmcMandisMonitored: marketPrices.length,
+      avgFarmerGainPercentage: '+22.4% Net Realisation over Traditional Intermediary'
+    },
+    supabaseStatus: db.getStatus()
+  });
+});
+
+app.get('/api/admin/logs', (req, res) => {
+  const logs = db.getCollection('adminLogs');
+  res.json({ success: true, logs });
+});
+
+app.patch('/api/admin/verify-user/:id', (req, res) => {
+  const { id } = req.params;
+  const { verified, trustScore } = req.body;
+
+  const user = db.updateById('users', id, {
+    verified: verified !== undefined ? verified : true,
+    trustScore: trustScore ? Number(trustScore) : 95
+  });
+
+  // Also update in FPOs if FPO
+  const fpos = db.getCollection('fpos');
+  const fpo = fpos.find(f => f.userId === id || f.id === id);
+  if (fpo) {
+    db.updateById('fpos', fpo.id, {
+      verificationStatus: verified ? 'VERIFIED_FPC' : 'REJECTED_AUDIT',
+      trustScore: trustScore ? Number(trustScore) : 95
+    });
+  }
+
+  db.insert('adminLogs', {
+    action: 'USER_KYC_STATUS_CHANGED',
+    targetId: id,
+    performedBy: 'MSAMB Market Regulator',
+    details: { verified, trustScore }
+  });
+
+  res.json({ success: true, message: 'User verification and trust tier updated.', user });
+});
+
+// Reputation scoring endpoint
+app.get('/api/reputation/:userId', (req, res) => {
+  const { userId } = req.params;
+  const user = db.findById('users', userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const disputes = db.getCollection('disputes').filter(d => d.againstUser === userId && d.status === 'OPEN');
+  const txns = db.getCollection('transactions').filter(t => t.fpoId === userId || t.buyerId === userId);
+
+  const rep = calculateEvidenceReputation({
+    role: user.role,
+    kycVerified: user.verified !== false,
+    completedTrades: txns.length,
+    disputeCount: disputes.length,
+    onTimePaymentRate: 96
+  });
+
+  res.json({ success: true, userId, user: user.name, role: user.role, ...rep });
 });
 
 // Start Server

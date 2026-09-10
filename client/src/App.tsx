@@ -9,6 +9,7 @@ import { AuthPages } from './components/AuthPages';
 import { FarmerDashboard } from './components/FarmerDashboard';
 import { FPODashboard } from './components/FPODashboard';
 import { BuyerDashboard } from './components/BuyerDashboard';
+import { AdminDashboard } from './components/AdminDashboard';
 
 const MainLayout: React.FC = () => {
   const { quickDemoLogin } = useAuth();
@@ -24,6 +25,7 @@ const MainLayout: React.FC = () => {
     if (role === 'FARMER') setCurrentView('farmer_dashboard');
     else if (role === 'FPO') setCurrentView('fpo_dashboard');
     else if (role === 'BUYER') setCurrentView('buyer_dashboard');
+    else if (role === 'ADMIN') setCurrentView('admin_dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -37,6 +39,7 @@ const MainLayout: React.FC = () => {
               if (role === 'FARMER') setCurrentView('farmer_dashboard');
               else if (role === 'FPO') setCurrentView('fpo_dashboard');
               else if (role === 'BUYER') setCurrentView('buyer_dashboard');
+              else if (role === 'ADMIN') setCurrentView('admin_dashboard');
             }}
             onCancel={() => setCurrentView('home')}
           />
@@ -49,6 +52,7 @@ const MainLayout: React.FC = () => {
               if (role === 'FARMER') setCurrentView('farmer_dashboard');
               else if (role === 'FPO') setCurrentView('fpo_dashboard');
               else if (role === 'BUYER') setCurrentView('buyer_dashboard');
+              else if (role === 'ADMIN') setCurrentView('admin_dashboard');
             }}
             onCancel={() => setCurrentView('home')}
           />
@@ -59,6 +63,8 @@ const MainLayout: React.FC = () => {
         return <FPODashboard />;
       case 'buyer_dashboard':
         return <BuyerDashboard />;
+      case 'admin_dashboard':
+        return <AdminDashboard />;
       case 'home':
       default:
         return <HomeSections onNavigate={handleNavigate} onQuickDemo={handleQuickDemo} />;

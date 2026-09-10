@@ -12,14 +12,22 @@ import {
   ChevronRight,
   AlertCircle,
   Camera,
-  RefreshCw
+  RefreshCw,
+  Warehouse,
+  Coins,
+  Scale,
+  MapPin,
+  ArrowUpRight,
+  ArrowDownRight,
+  Zap,
+  Award
 } from 'lucide-react';
 
 export const FarmerDashboard: React.FC = () => {
   const { user } = useAuth();
   const { language, t } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState<'produce' | 'market' | 'quality' | 'fpo'>('produce');
+  const [activeTab, setActiveTab] = useState<'produce' | 'market' | 'rankings' | 'quality' | 'fpo'>('produce');
   const [produces, setProduces] = useState<any[]>([]);
   const [fpos, setFpos] = useState<any[]>([]);
 
@@ -46,13 +54,36 @@ export const FarmerDashboard: React.FC = () => {
   const [qualityResult, setQualityResult] = useState<any>(null);
   const [inspecting, setInspecting] = useState(false);
 
+  // Multi-Mandi Ranking & Net Realisation State
+  const [rankingCrop, setRankingCrop] = useState('Onion');
+  const [rankingQty, setRankingQty] = useState(50);
+  const [rankingStorageDays, setRankingStorageDays] = useState(0);
+  const [rankingData, setRankingData] = useState<any>(null);
+  const [rankingLoading, setRankingLoading] = useState(false);
+
   const API_BASE = 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchFarmerData();
     fetchPrediction('onion', 3);
     runAiQualityTest('onion');
+    fetchRankings('Onion', 50, 0);
   }, []);
+
+  const fetchRankings = async (crop: string, qty: number, days: number) => {
+    setRankingLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/market/rankings?crop=${crop}&quantity=${qty}&storageDays=${days}`);
+      const data = await res.json();
+      if (data.success) {
+        setRankingData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching market rankings:', err);
+    } finally {
+      setRankingLoading(false);
+    }
+  };
 
   const fetchFarmerData = async () => {
     try {
@@ -243,6 +274,7 @@ export const FarmerDashboard: React.FC = () => {
         {[
           { id: 'produce', label: language === 'mr' ? 'माझा शेतमाल' : 'My Produce & Lots', icon: Package },
           { id: 'market', label: language === 'mr' ? 'ML दर अंदाज' : 'ML Price Prediction', icon: TrendingUp },
+          { id: 'rankings', label: language === 'mr' ? 'बाजारपेठ रँकिंग (Net Realisation)' : 'Mandi Rankings (Net ₹)', icon: Scale },
           { id: 'quality', label: language === 'mr' ? 'AI प्रतवारी' : 'AI Quality Scan', icon: Sparkles },
           { id: 'fpo', label: language === 'mr' ? 'FPO माहिती' : 'FPO Aggregation', icon: Building2 }
         ].map(tab => {
@@ -360,110 +392,578 @@ export const FarmerDashboard: React.FC = () => {
       )}
 
       {/* ===================================================================
-          TAB 2: ML FUTURE PRICE PREDICTION
+          TAB 2: ML FUTURE PRICE PREDICTION & CROP INTELLIGENCE
           =================================================================== */}
       {activeTab === 'market' && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-agro-light shadow-sm">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-black text-agro-text flex items-center gap-2">
                   <TrendingUp className="w-6 h-6 text-agro-primary" />
-                  <span>{language === 'mr' ? 'ML भविष्यातील बाजारभाव अंदाज' : 'ML Future Price Prediction Model'}</span>
+                  <span>{language === 'mr' ? 'पीकनिहाय ML बाजारभाव अंदाज व साठवणूक विश्लेषण' : 'Crop-Calibrated ML Price Prediction & Storage Intelligence'}</span>
                 </h2>
                 <p className="text-xs text-gray-500 mt-1">
-                  Time-series regression incorporating seasonality, APMC arrival volumes, and storage costs.
+                  {language === 'mr'
+                    ? 'हवामान, आवक, जैविक घट (Shrinkage) आणि शीतगृह/चाळ साठवणूक खर्चावर आधारित प्रगत विश्लेषण.'
+                    : 'Time-series regression calibrated with biological decay, storage economics, and APMC arbitrage.'}
                 </p>
               </div>
 
-              {/* Commodity & Horizon Selector */}
+              {/* Horizon Selector */}
               <div className="flex items-center gap-2">
-                <select
-                  value={mlCommodity}
-                  onChange={e => {
-                    setMlCommodity(e.target.value);
-                    fetchPrediction(e.target.value, mlHorizon);
-                  }}
-                  className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold bg-agro-bg text-agro-dark outline-none"
-                >
-                  <option value="onion">Onion (कांदा)</option>
-                  <option value="tomato">Tomato (टोमॅटो)</option>
-                  <option value="grapes">Grapes (द्राक्षे)</option>
-                  <option value="pomegranate">Pomegranate (डाळिंब)</option>
-                  <option value="soybean">Soybean (सोयाबीन)</option>
-                </select>
+                <span className="text-xs font-bold text-gray-500">{language === 'mr' ? 'कालावधी:' : 'Horizon:'}</span>
+                <div className="flex rounded-xl bg-agro-bg p-1 border border-gray-200">
+                  {[1, 2, 3, 4, 6].map(h => (
+                    <button
+                      key={h}
+                      onClick={() => {
+                        setMlHorizon(h);
+                        fetchPrediction(mlCommodity, h);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        mlHorizon === h
+                          ? 'bg-agro-primary text-white shadow-sm'
+                          : 'text-gray-600 hover:text-agro-dark'
+                      }`}
+                    >
+                      {h} {language === 'mr' ? 'आठवडे' : (h === 1 ? 'Wk' : 'Wks')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                <select
-                  value={mlHorizon}
-                  onChange={e => {
-                    const h = Number(e.target.value);
-                    setMlHorizon(h);
-                    fetchPrediction(mlCommodity, h);
-                  }}
-                  className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold bg-agro-bg text-agro-dark outline-none"
-                >
-                  <option value={1}>1 Week Ahead</option>
-                  <option value={2}>2 Weeks Ahead</option>
-                  <option value={3}>3 Weeks Ahead</option>
-                  <option value={4}>4 Weeks Ahead</option>
-                </select>
+            {/* Quick Crop Selector Pills */}
+            <div className="mb-6">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                {language === 'mr' ? 'पीक निवडा (Select Crop):' : 'Select Crop Category:'}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {[
+                  { key: 'onion', nameEn: 'Onion', nameMr: 'कांदा', icon: '🧅' },
+                  { key: 'tomato', nameEn: 'Tomato', nameMr: 'टोमॅटो', icon: '🍅' },
+                  { key: 'grapes', nameEn: 'Grapes', nameMr: 'द्राक्षे', icon: '🍇' },
+                  { key: 'pomegranate', nameEn: 'Pomegranate', nameMr: 'डाळिंब', icon: '🍎' },
+                  { key: 'soybean', nameEn: 'Soybean', nameMr: 'सोयाबीन', icon: '🌱' },
+                  { key: 'cabbage', nameEn: 'Cabbage', nameMr: 'कोबी', icon: '🥬' },
+                  { key: 'sugarcane', nameEn: 'Sugarcane', nameMr: 'ऊस', icon: '🎋' }
+                ].map(c => {
+                  const isSelected = mlCommodity.toLowerCase() === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => {
+                        setMlCommodity(c.key);
+                        fetchPrediction(c.key, mlHorizon);
+                      }}
+                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-emerald-50 border-agro-primary shadow-sm ring-2 ring-agro-primary/20'
+                          : 'bg-white border-gray-200 hover:border-agro-light hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-2xl">{c.icon}</span>
+                        {isSelected && (
+                          <span className="w-2 h-2 rounded-full bg-agro-primary" />
+                        )}
+                      </div>
+                      <div className="text-xs font-black text-agro-dark">
+                        {language === 'mr' ? c.nameMr : c.nameEn}
+                      </div>
+                      <div className="text-[10px] text-gray-500 font-medium">
+                        {language === 'mr' ? c.nameEn : c.nameMr}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {predicting ? (
-              <div className="py-12 text-center text-sm font-bold text-gray-500">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-agro-primary mb-2" />
-                Running Time-Series ML Regressor...
+              <div className="py-16 text-center text-sm font-bold text-gray-500">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-agro-primary mb-3" />
+                <span>{language === 'mr' ? 'पीक-विशिष्ट ML अल्गोरिदम चालवत आहे...' : 'Running Crop-Specific Time-Series Regressor...'}</span>
               </div>
             ) : predictionData ? (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Predicted Range Card */}
-                <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-agro-bright/40">
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                    Predicted Range ({mlHorizon} Weeks)
+              <div className="space-y-6">
+                {/* 1. Crop Biological & Agronomic Specs Banner */}
+                {predictionData.cropAttributes && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-900 to-agro-dark text-white shadow-sm flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{predictionData.icon || '🌾'}</span>
+                      <div>
+                        <div className="text-xs text-emerald-300 font-bold uppercase tracking-wider">
+                          {predictionData.cropAttributes.type} • {predictionData.category}
+                        </div>
+                        <h3 className="text-lg font-black">{predictionData.commodity}</h3>
+                        <p className="text-xs text-white/80">
+                          {language === 'mr' ? 'प्रमुख वाण: ' : 'Key Varieties: '}
+                          <span className="font-semibold text-emerald-200">{predictionData.cropAttributes.primaryVarieties}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
+                      <div className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10">
+                        <div className="text-[10px] text-emerald-300 uppercase font-bold flex items-center gap-1">
+                          <Warehouse className="w-3 h-3" />
+                          <span>{language === 'mr' ? 'साठवणूक पद्धत' : 'Storage Method'}</span>
+                        </div>
+                        <div className="font-bold">{predictionData.cropAttributes.storageType}</div>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10">
+                        <div className="text-[10px] text-emerald-300 uppercase font-bold">{language === 'mr' ? 'टिकाऊपणा' : 'Safe Window'}</div>
+                        <div className="font-bold">{predictionData.cropAttributes.safeStorageDuration}</div>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/10">
+                        <div className="text-[10px] text-emerald-300 uppercase font-bold flex items-center gap-1">
+                          <Scale className="w-3 h-3" />
+                          <span>{language === 'mr' ? 'घट / नुकसान' : 'Shrinkage Rate'}</span>
+                        </div>
+                        <div className="font-bold">{predictionData.cropAttributes.monthlyShrinkageRate}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-3xl sm:text-4xl font-black text-agro-dark my-2">
-                    {predictionData.predictedDisplay}
+                )}
+
+                {/* 2. Top Forecast & Economic Advisory Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Predicted Range Card */}
+                  <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-agro-bright/40 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                        <span>{language === 'mr' ? 'अपेक्षित बाजारभाव' : 'Predicted Price Range'}</span>
+                        <span className="text-agro-primary font-black flex items-center gap-0.5">
+                          {predictionData.trendDirection === 'INCREASING' ? (
+                            <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+                          ) : (
+                            <ArrowDownRight className="w-4 h-4 text-rose-600" />
+                          )}
+                          +{predictionData.growthPercentage}%
+                        </span>
+                      </div>
+                      <div className="text-3xl sm:text-4xl font-black text-agro-dark my-2 tracking-tight">
+                        {predictionData.predictedDisplay}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {language === 'mr' ? 'सध्याचा स्पॉट दर: ' : 'Current Spot Rate: '}
+                        <span className="font-bold text-agro-dark">₹{predictionData.currentPrice?.toLocaleString('en-IN')} / q</span>
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-emerald-200/70 text-xs flex items-center justify-between">
+                      <span className="text-gray-600 font-medium">{language === 'mr' ? 'मॉडेल अचूकता स्कोर:' : 'Model Confidence Score:'}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-black">
+                        {predictionData.confidenceScore}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-xs font-bold text-emerald-800 flex items-center justify-between mt-3 pt-3 border-t border-emerald-200/60">
-                    <span>Confidence Score:</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-extrabold">
-                      {predictionData.confidenceScore}%
-                    </span>
+
+                  {/* Sell Now vs Wait vs Store Card */}
+                  <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-3 py-1 rounded-xl text-white font-black text-xs uppercase tracking-wide ${
+                            predictionData.recommendation === 'STORE'
+                              ? 'bg-emerald-600'
+                              : predictionData.recommendation === 'WAIT'
+                              ? 'bg-amber-600'
+                              : 'bg-rose-600'
+                          }`}>
+                            {predictionData.recommendation}
+                          </span>
+                          <span className="text-xs font-bold text-amber-900 flex items-center gap-1">
+                            <Coins className="w-3.5 h-3.5 text-amber-700" />
+                            {language === 'mr' ? 'कृषी अर्थतज्ज्ञ AI सल्ला' : 'Agri-Economic AI Advisory'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-extrabold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-full">
+                          {predictionData.recommendationVerdict}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-amber-950 leading-relaxed font-medium">
+                        {language === 'mr'
+                          ? predictionData.recommendationText?.mr
+                          : predictionData.recommendationText?.en}
+                      </p>
+                    </div>
+
+                    {/* Economics summary */}
+                    <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-amber-200 text-xs">
+                      <div>
+                        <span className="text-gray-500">{language === 'mr' ? 'अपेक्षित वाढ' : 'Gross Appreciation'}:</span>
+                        <div className="font-black text-agro-dark">
+                          +₹{predictionData.storageEconomics?.grossGain ?? predictionData.netGainEstimate} / q
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">{language === 'mr' ? 'साठवणूक + घट खर्च' : 'Holding + Spoilage'}:</span>
+                        <div className="font-black text-rose-700">
+                          -₹{predictionData.storageEconomics?.totalHoldingCost ?? predictionData.holdingCostEstimate} / q
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">{language === 'mr' ? 'निव्वळ फायदा' : 'True Net Realization'}:</span>
+                        <div className={`font-black text-sm ${
+                          (predictionData.storageEconomics?.netGain ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                        }`}>
+                          {(predictionData.storageEconomics?.netGain ?? 0) >= 0 ? '+' : ''}
+                          ₹{predictionData.storageEconomics?.netGain ?? predictionData.netGainEstimate} / q
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Sell Now vs Wait vs Store Card */}
-                <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200 lg:col-span-2 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-3 py-1 rounded-lg bg-amber-500 text-white font-black text-xs uppercase">
-                        {predictionData.recommendation}
-                      </span>
-                      <span className="text-xs font-bold text-amber-900">
-                        {language === 'mr' ? 'कृषी अर्थतज्ज्ञ सल्ला' : 'Agri-Economic Advisory'}
-                      </span>
+                {/* 3. Crop-Specific Market Drivers */}
+                {predictionData.cropSpecificDrivers && predictionData.cropSpecificDrivers.length > 0 && (
+                  <div className="bg-agro-bg rounded-3xl p-6 border border-agro-light/80">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap className="w-5 h-5 text-amber-600" />
+                      <h4 className="text-sm font-black text-agro-text uppercase tracking-wide">
+                        {language === 'mr'
+                          ? `${predictionData.commodity} साठी प्रमुख बाजार घटक (Market Drivers)`
+                          : `Real-Time Market Drivers for ${predictionData.shortName || predictionData.commodity}`}
+                      </h4>
                     </div>
-                    <p className="text-sm text-amber-900/90 leading-relaxed font-medium">
-                      {language === 'mr'
-                        ? predictionData.recommendationText?.mr
-                        : predictionData.recommendationText?.en}
-                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {predictionData.cropSpecificDrivers.map((driver: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                                driver.impact === 'POSITIVE'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}>
+                                {driver.impact}
+                              </span>
+                              <span className="text-xs font-black text-agro-dark">{driver.weight}</span>
+                            </div>
+                            <h5 className="font-bold text-xs text-agro-text mb-1">{driver.factor}</h5>
+                            <p className="text-[11px] text-gray-600 leading-normal">
+                              {language === 'mr' ? driver.descriptionMr : driver.descriptionEn}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-amber-200 text-xs">
-                    <div>
-                      <span className="text-gray-500">Estimated Holding Cost:</span>
-                      <div className="font-bold text-amber-900">₹{predictionData.holdingCostEstimate} / q</div>
+                )}
+
+                {/* 4. Regional Mandi Arbitrage Matrix */}
+                {predictionData.mandiComparison && predictionData.mandiComparison.length > 0 && (
+                  <div className="bg-white rounded-3xl p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-agro-primary" />
+                        <h4 className="text-sm font-black text-agro-text">
+                          {language === 'mr' ? 'पुणे जिल्ह्यातील प्रमुख बाजारपेठा दर तुलना (Mandi Arbitrage)' : 'Regional Mandi Realization Comparison'}
+                        </h4>
+                      </div>
+                      <span className="text-[11px] text-gray-500 font-medium">
+                        {language === 'mr' ? 'वाहतूक खर्च वजा करून निव्वळ परतावा' : 'Net in-hand price after transport deductions'}
+                      </span>
                     </div>
-                    <div>
-                      <span className="text-gray-500">Expected Net Gain:</span>
-                      <div className="font-bold text-emerald-700">+₹{predictionData.netGainEstimate} / q</div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {predictionData.mandiComparison.map((m: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-2xl border transition-all ${
+                            m.isBestOption
+                              ? 'bg-emerald-50/80 border-emerald-500 shadow-sm ring-1 ring-emerald-400'
+                              : 'bg-gray-50 border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-black text-agro-dark">{m.mandi}</span>
+                            {m.isBestOption && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black">
+                                <Award className="w-3 h-3" />
+                                {language === 'mr' ? 'सर्वोत्तम परतावा' : 'Top Realization'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-lg font-black text-agro-dark">
+                            ₹{m.netRealisation?.toLocaleString('en-IN')} <span className="text-[10px] font-normal text-gray-500">/ q (Net)</span>
+                          </div>
+                          <div className="text-[11px] text-gray-500 mt-1 flex justify-between">
+                            <span>Mandi Price: ₹{m.estimatedPrice}</span>
+                            <span>Transport: -₹{m.transportCost}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* 5. Historical vs Forecast Timeline */}
+                {predictionData.historicalTrend && (
+                  <div className="p-5 rounded-2xl bg-gray-50 border border-gray-200">
+                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      {language === 'mr' ? 'बाजारभाव वाटचाल (Historical & Forecast Timeline):' : 'Price Trajectory & Forecast Horizon:'}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                      {predictionData.historicalTrend.map((pt: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-xl border text-center ${
+                            pt.spot
+                              ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-black'
+                              : pt.predicted
+                              ? 'bg-teal-50 border-teal-200 text-teal-900'
+                              : 'bg-white border-gray-200 text-gray-700'
+                          }`}
+                        >
+                          <div className="text-[10px] uppercase font-bold text-gray-500">{pt.label}</div>
+                          <div className="text-sm font-black mt-1">₹{pt.price?.toLocaleString('en-IN')}</div>
+                          {pt.predicted && (
+                            <div className="text-[9px] font-bold text-teal-700 mt-0.5">AI Forecast</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : null}
           </div>
+        </div>
+      )}
+
+      {/* ===================================================================
+          TAB 2B: MULTI-MANDI RANKING & NET REALISATION DISCOVERY
+          =================================================================== */}
+      {activeTab === 'rankings' && (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {language === 'mr' ? '📊 खरी निव्वळ प्राप्ती इंजिन' : '📊 True Net Realisation Engine'}
+                </span>
+                <span className="text-xs text-emerald-300">Live Agmarknet + Transport Deductions</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white">
+                {language === 'mr' ? 'सर्वोत्तम बाजारपेठ निवड व निव्वळ नफा रँकिंग' : 'Multi-Mandi Ranking & In-Hand Return Optimizer'}
+              </h2>
+              <p className="text-sm text-emerald-100/80 mt-1 max-w-2xl">
+                {language === 'mr'
+                  ? 'केवळ वरवरचा बाजारभाव न बघता वाहतूक, हमाली, सेस व संभाव्य नासाडी वजा जाता कोणत्या बाजारात शेतकऱ्याला सर्वाधिक निव्वळ पैसे मिळतील ते शोधा.'
+                  : 'Compare regional APMCs by actual in-hand payout after deducting distance transport, handling, mandi cess, and biological decay loss.'}
+              </p>
+
+              {/* Crop & Parameter Filters */}
+              <div className="mt-6 pt-6 border-t border-emerald-800/40 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Crop select */}
+                <div>
+                  <label className="block text-xs font-bold text-emerald-200 mb-1.5">
+                    {language === 'mr' ? 'पीक निवडा:' : 'Select Crop:'}
+                  </label>
+                  <select
+                    value={rankingCrop}
+                    onChange={e => {
+                      setRankingCrop(e.target.value);
+                      fetchRankings(e.target.value, rankingQty, rankingStorageDays);
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-900/90 text-white border border-emerald-700/50 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-400"
+                  >
+                    <option value="Onion">🧅 Onion (कांदा)</option>
+                    <option value="Tomato">🍅 Tomato (टोमॅटो)</option>
+                    <option value="Grapes">🍇 Grapes (द्राक्षे)</option>
+                    <option value="Pomegranate">🔴 Pomegranate (डाळिंब)</option>
+                    <option value="Soybean">🌱 Soybean (सोयाबीन)</option>
+                    <option value="Cabbage">🥬 Cabbage (कोबी)</option>
+                    <option value="Sugarcane">🌾 Sugarcane (ऊस)</option>
+                  </select>
+                </div>
+
+                {/* Quantity */}
+                <div>
+                  <label className="block text-xs font-bold text-emerald-200 mb-1.5">
+                    {language === 'mr' ? 'मालाचे प्रमाण (क्विंटल):' : 'Harvest Quantity (Qtl):'}
+                  </label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="1000"
+                    value={rankingQty}
+                    onChange={e => {
+                      const val = Number(e.target.value) || 10;
+                      setRankingQty(val);
+                      fetchRankings(rankingCrop, val, rankingStorageDays);
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-900/90 text-white border border-emerald-700/50 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-400"
+                  />
+                </div>
+
+                {/* Storage Duration */}
+                <div>
+                  <label className="block text-xs font-bold text-emerald-200 mb-1.5">
+                    {language === 'mr' ? 'साठवणूक कालावधी:' : 'Storage / Holding Window:'}
+                  </label>
+                  <select
+                    value={rankingStorageDays}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      setRankingStorageDays(val);
+                      fetchRankings(rankingCrop, rankingQty, val);
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-900/90 text-white border border-emerald-700/50 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-400"
+                  >
+                    <option value={0}>🚀 Immediate Transit (0 Days)</option>
+                    <option value={7}>⏳ Short Hold in Shed (7 Days)</option>
+                    <option value={30}>❄️ Cold Storage / Ventilated Chawl (30 Days)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {rankingLoading ? (
+            <div className="p-12 text-center bg-white rounded-3xl border border-agro-light">
+              <RefreshCw className="w-8 h-8 text-agro-primary animate-spin mx-auto mb-2" />
+              <div className="text-sm font-bold text-agro-text">Calculating Multi-Mandi Realization & Transport Matrix...</div>
+            </div>
+          ) : rankingData ? (
+            <div className="space-y-6">
+              {/* Top Mandi Highlight Banner */}
+              {rankingData.topMandi && (
+                <div className="p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-500 shadow-sm relative overflow-hidden">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-black">
+                          <Award className="w-3.5 h-3.5" />
+                          {language === 'mr' ? '#१ सर्वाधिक नफा देणारा बाजार' : '#1 Highest Net Return Mandi'}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-800">{rankingData.topMandi.district}</span>
+                      </div>
+                      <h3 className="text-2xl font-black text-agro-dark mt-1">
+                        {rankingData.topMandi.mandi}
+                      </h3>
+                      <div className="text-xs text-gray-600 mt-1 flex flex-wrap items-center gap-4">
+                        <span>Distance: <strong>{rankingData.topMandi.distanceKm} km</strong></span>
+                        <span>Gross Price: <strong>₹{rankingData.topMandi.grossPrice}/q</strong></span>
+                        <span>Total Deductions: <strong className="text-rose-600">-₹{rankingData.topMandi.totalDeductions}/q</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="text-right md:border-l md:border-emerald-200 md:pl-6">
+                      <div className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                        {language === 'mr' ? 'हातात मिळणारा निव्वळ दर' : 'Net In-Hand Realisation'}
+                      </div>
+                      <div className="text-3xl font-black text-emerald-700">
+                        ₹{rankingData.topMandi.netRealisation?.toLocaleString('en-IN')} <span className="text-sm font-bold text-gray-500">/ q</span>
+                      </div>
+                      <div className="text-xs font-extrabold text-emerald-900 mt-1">
+                        Total {rankingQty}Q Payout: ₹{rankingData.topMandi.totalLotRevenue?.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Explainable AI Rationale */}
+                  {rankingData.explainableInsight && (
+                    <div className="mt-4 pt-4 border-t border-emerald-200 text-xs font-medium text-emerald-950 flex items-start gap-2 bg-emerald-100/60 p-3.5 rounded-2xl">
+                      <Sparkles className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Explainable AI Rationale: </strong>
+                        {language === 'mr' ? rankingData.explainableInsight.mr : rankingData.explainableInsight.en}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mandi Ranking Table */}
+              <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                  <h4 className="text-sm font-black text-agro-dark flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-agro-primary" />
+                    {language === 'mr' ? 'महाराष्ट्र बाजार समित्या तुलना तक्ता (Ranking Matrix)' : 'All Mandis Net In-Hand Comparison'}
+                  </h4>
+                  <span className="text-xs text-gray-500 font-medium">Sorted by highest net payout</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                    <thead className="bg-gray-50 text-gray-600 font-bold uppercase text-[11px]">
+                      <tr>
+                        <th className="px-5 py-3.5 text-left">Rank & Mandi</th>
+                        <th className="px-5 py-3.5 text-left">Distance</th>
+                        <th className="px-5 py-3.5 text-right">Gross Price</th>
+                        <th className="px-5 py-3.5 text-right">Transport</th>
+                        <th className="px-5 py-3.5 text-right">Cess & Handling</th>
+                        <th className="px-5 py-3.5 text-right">Spoilage Loss</th>
+                        <th className="px-5 py-3.5 text-right text-emerald-700 font-black">Net In-Hand (₹/q)</th>
+                        <th className="px-5 py-3.5 text-right font-black">Total ({rankingQty}Q)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {rankingData.rankedMandis?.map((m: any) => (
+                        <tr
+                          key={m.mandi}
+                          className={`hover:bg-gray-50 transition-colors ${
+                            m.isTopRecommendation ? 'bg-emerald-50/40 font-bold' : ''
+                          }`}
+                        >
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                                m.rank === 1
+                                  ? 'bg-emerald-600 text-white'
+                                  : m.rank === 2
+                                  ? 'bg-teal-600 text-white'
+                                  : 'bg-gray-200 text-gray-700'
+                              }`}>
+                                {m.rank}
+                              </span>
+                              <div>
+                                <div className="font-bold text-agro-dark">{m.mandi}</div>
+                                <div className="text-[11px] text-gray-400">{m.district}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-gray-600">
+                            {m.distanceKm} km
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right font-semibold text-gray-800">
+                            ₹{m.grossPrice?.toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right text-rose-600 font-medium">
+                            -₹{m.transportCost}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right text-gray-500">
+                            -₹{m.handlingCost + m.marketCess}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right text-amber-700">
+                            -₹{m.spoilageLoss}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right text-base font-black text-emerald-700">
+                            ₹{m.netRealisation?.toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap text-right font-black text-agro-dark">
+                            ₹{m.totalLotRevenue?.toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
 

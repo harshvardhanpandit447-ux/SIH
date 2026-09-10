@@ -32,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
     if (role === 'FARMER') onNavigate('farmer_dashboard');
     else if (role === 'FPO') onNavigate('fpo_dashboard');
     else if (role === 'BUYER') onNavigate('buyer_dashboard');
+    else if (role === 'ADMIN') onNavigate('admin_dashboard');
   };
 
   return (
@@ -174,6 +175,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
                     </div>
                     {user?.role === 'BUYER' && <CheckCircle2 className="w-4 h-4 text-agro-primary" />}
                   </button>
+                  <button
+                    onClick={() => handleDemoSwitch('ADMIN')}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 flex items-center justify-between text-agro-text border-t border-gray-100"
+                  >
+                    <div>
+                      <div className="font-bold text-indigo-900">🏛️ {language === 'mr' ? 'राज्य कृषी बाजार नियामक' : 'Market Regulator (MSAMB)'}</div>
+                      <div className="text-xs text-gray-500">Dr. Nitin Thorat (Admin)</div>
+                    </div>
+                    {user?.role === 'ADMIN' && <CheckCircle2 className="w-4 h-4 text-indigo-600" />}
+                  </button>
                 </div>
               )}
             </div>
@@ -186,6 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
                     if (user.role === 'FARMER') onNavigate('farmer_dashboard');
                     else if (user.role === 'FPO') onNavigate('fpo_dashboard');
                     else if (user.role === 'BUYER') onNavigate('buyer_dashboard');
+                    else if (user.role === 'ADMIN') onNavigate('admin_dashboard');
                   }}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-agro-primary text-white font-semibold text-sm hover:bg-agro-dark transition-all shadow-sm shadow-agro-primary/30"
                 >
@@ -283,6 +295,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
                 if (user?.role === 'FARMER') onNavigate('farmer_dashboard');
                 else if (user?.role === 'FPO') onNavigate('fpo_dashboard');
                 else if (user?.role === 'BUYER') onNavigate('buyer_dashboard');
+                else if (user?.role === 'ADMIN') onNavigate('admin_dashboard');
                 else onNavigate('login');
                 setMobileMenuOpen(false);
               }}
@@ -308,7 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
 
           <div className="pt-2 border-t border-gray-100">
             <div className="text-xs font-bold text-agro-dark/70 mb-2">⚡ {t('nav.demoLogin')}:</div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 onClick={() => handleDemoSwitch('FARMER')}
                 className="py-2.5 px-2 text-xs font-bold bg-emerald-50 active:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-center"
@@ -323,9 +336,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
               </button>
               <button
                 onClick={() => handleDemoSwitch('BUYER')}
-                className="py-2.5 px-2 text-xs font-bold bg-emerald-50 active:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-center"
+                className="py-2.5 px-2 text-xs font-bold bg-blue-50 active:bg-blue-100 text-blue-800 border border-blue-200 rounded-xl text-center"
               >
                 🛒 खरेदीदार
+              </button>
+              <button
+                onClick={() => handleDemoSwitch('ADMIN')}
+                className="py-2.5 px-2 text-xs font-bold bg-slate-800 active:bg-slate-900 text-indigo-200 border border-slate-700 rounded-xl text-center"
+              >
+                🏛️ Admin
               </button>
             </div>
           </div>

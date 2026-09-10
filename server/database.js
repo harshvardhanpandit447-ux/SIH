@@ -6,6 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const supabaseBridge = require('./supabase');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'agrovision_db.json');
@@ -62,6 +63,20 @@ const INITIAL_DB = {
       buyerType: 'Institutional Wholesaler & Supermarket Supplier',
       trustScore: 92,
       createdAt: '2026-01-12T10:00:00.000Z'
+    },
+    {
+      id: 'usr_admin_01',
+      name: 'Maharashtra Agri Marketing Board (MSAMB)',
+      contactPerson: 'Dr. Nitin Thorat (Director of Marketing)',
+      email: 'admin@agrovision.in',
+      mobile: '9820011223',
+      role: 'ADMIN',
+      password: 'admin123',
+      district: 'Pune',
+      state: 'Maharashtra',
+      department: 'State Agricultural Marketing & Dispute Resolution Cell',
+      trustScore: 100,
+      createdAt: '2026-01-01T10:00:00.000Z'
     }
   ],
 
@@ -488,13 +503,91 @@ const INITIAL_DB = {
       timestamp: '2026-03-05T09:15:00.000Z',
       read: false
     }
+  ],
+
+  // Operational Lifecycle: Dispute Management & Arbitration
+  disputes: [
+    {
+      id: 'disp_01',
+      lotId: 'lot_01',
+      lotNumber: 'LOT-PUN-ON-2026-01',
+      transactionId: 'txn_01',
+      raisedBy: 'usr_buyer_01',
+      raisedByName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      raisedByRole: 'BUYER',
+      againstUser: 'usr_fpo_01',
+      againstUserName: 'Shivneri Agri Farmers Producer Co.',
+      reason: 'Slight moisture variance on top layer bags (3% above Grade A spec)',
+      disputeCategory: 'QUALITY_MISMATCH',
+      evidenceUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+      claimedAmount: 6000,
+      status: 'OPEN', // OPEN, UNDER_ARBITRATION, RESOLVED_REFUND, RESOLVED_RELEASE, SETTLED
+      resolutionNotes: 'Under review by MSAMB Market Regulator. FPO submitted pre-dispatch grading certificate.',
+      arbitratedBy: 'usr_admin_01',
+      createdAt: '2026-03-05T16:45:00.000Z'
+    }
+  ],
+
+  // System Architecture: Admin & Regulatory Audit Logs
+  adminLogs: [
+    {
+      id: 'log_01',
+      action: 'FPO_KYC_VERIFIED',
+      targetId: 'fpo_01',
+      performedBy: 'Dr. Nitin Thorat (MSAMB)',
+      details: {
+        fpoName: 'Shivneri Agri Farmers Producer Co.',
+        auditDocuments: ['NABARD_REG_2018.pdf', 'FSSAI_CENTRAL_LICENSE.pdf'],
+        status: 'VERIFIED'
+      },
+      createdAt: '2026-01-10T11:30:00.000Z'
+    },
+    {
+      id: 'log_02',
+      action: 'AGMARKNET_FEED_SYNC',
+      targetId: 'mkt_sync_all',
+      performedBy: 'Agmarknet APMC Automated Poller',
+      details: {
+        mandisUpdated: ['Pune Gultekdi', 'Narayangaon', 'Baramati', 'Khed', 'Mumbai Vashi'],
+        commoditiesSynced: 12,
+        recordsProcessed: 148
+      },
+      createdAt: '2026-03-05T06:00:00.000Z'
+    }
   ]
 };
 
 // Database state management
 class DatabaseStore {
   constructor() {
+    this.supabaseConnected = false;
     this.data = this.loadData();
+    this.initSupabaseSync();
+  }
+
+  async initSupabaseSync() {
+    try {
+      console.log('[Database] Connecting and synchronizing with Supabase...');
+      const remoteData = await supabaseBridge.fetchAllCollections();
+      let hasData = false;
+      for (const [coll, items] of Object.entries(remoteData)) {
+        if (items && items.length > 0) {
+          this.data[coll] = items;
+          hasData = true;
+        }
+      }
+      if (hasData) {
+        this.supabaseConnected = true;
+        this.saveData(this.data);
+        console.log('[Database] Synchronized live data from Supabase successfully.');
+      } else {
+        console.log('[Database] Supabase connected. Seeding remote database with initial records...');
+        await supabaseBridge.resetSupabaseTables(INITIAL_DB);
+        this.supabaseConnected = true;
+      }
+    } catch (err) {
+      console.warn('[Database] Could not sync with Supabase on startup, using local fallback:', err.message);
+    }
   }
 
   loadData() {
@@ -540,6 +633,12 @@ class DatabaseStore {
     };
     this.data[name].unshift(record);
     this.saveData();
+
+    // Asynchronously synchronize with Supabase table
+    supabaseBridge.syncRecord(name, record).catch(err => {
+      console.error(`[Supabase] Background sync error on insert (${name}):`, err.message);
+    });
+
     return record;
   }
 
@@ -552,8 +651,15 @@ class DatabaseStore {
         ...updates,
         updatedAt: new Date().toISOString()
       };
+      const updatedRecord = this.data[name][index];
       this.saveData();
-      return this.data[name][index];
+
+      // Asynchronously synchronize with Supabase table
+      supabaseBridge.syncRecord(name, updatedRecord).catch(err => {
+        console.error(`[Supabase] Background sync error on update (${name}):`, err.message);
+      });
+
+      return updatedRecord;
     }
     return null;
   }
@@ -564,6 +670,12 @@ class DatabaseStore {
     this.data[name] = this.data[name].filter(item => item.id !== id);
     if (this.data[name].length !== initialLen) {
       this.saveData();
+
+      // Asynchronously delete from Supabase table
+      supabaseBridge.deleteRecord(name, id).catch(err => {
+        console.error(`[Supabase] Background sync error on delete (${name}):`, err.message);
+      });
+
       return true;
     }
     return false;
@@ -572,10 +684,25 @@ class DatabaseStore {
   resetToSeed() {
     this.data = JSON.parse(JSON.stringify(INITIAL_DB));
     this.saveData();
+    supabaseBridge.resetSupabaseTables(INITIAL_DB).catch(err => {
+      console.error('[Supabase] Error resetting remote tables:', err.message);
+    });
     return this.data;
+  }
+
+  getStatus() {
+    return {
+      connected: this.supabaseConnected,
+      projectId: 'syguiyerrztsnstybxep',
+      supabaseUrl: supabaseBridge.SUPABASE_URL,
+      collections: Object.fromEntries(
+        Object.entries(this.data).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0])
+      )
+    };
   }
 }
 
 const db = new DatabaseStore();
 
 module.exports = db;
+

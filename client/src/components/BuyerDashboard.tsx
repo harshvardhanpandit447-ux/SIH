@@ -30,6 +30,13 @@ export const BuyerDashboard: React.FC = () => {
   const [activeLotForOffer, setActiveLotForOffer] = useState<any>(null);
   const [counterPrice, setCounterPrice] = useState(2820);
 
+  // Dispute Filing Modal
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('Slight moisture variance on top layer bags (3% above Grade A spec)');
+  const [disputeCategory, setDisputeCategory] = useState('QUALITY_MISMATCH');
+  const [disputeClaimAmount, setDisputeClaimAmount] = useState(6000);
+  const [filingDispute, setFilingDispute] = useState(false);
+
   const API_BASE = 'http://localhost:5000/api';
 
   useEffect(() => {
@@ -109,6 +116,42 @@ export const BuyerDashboard: React.FC = () => {
       }
     } catch (err) {
       console.error('Send offer error:', err);
+    }
+  };
+
+  const handleRaiseDisputeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFilingDispute(true);
+    try {
+      const res = await fetch(`${API_BASE}/disputes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lotId: 'lot_01',
+          lotNumber: 'LOT-PUN-ON-2026-01',
+          transactionId: 'txn_01',
+          raisedBy: user?.id || 'usr_buyer_01',
+          raisedByName: user?.name || 'Sahyadri Fresh Wholesale Pvt Ltd',
+          raisedByRole: 'BUYER',
+          againstUser: 'usr_fpo_01',
+          againstUserName: 'Shivneri Agri Farmers Producer Co.',
+          reason: disputeReason,
+          disputeCategory,
+          claimedAmount: Number(disputeClaimAmount),
+          evidenceUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600'
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSuccessMessage('Dispute officially filed with MSAMB Market Regulator. Escrow disbursement paused.');
+        setIsDisputeModalOpen(false);
+        fetchBuyerData();
+        setTimeout(() => setSuccessMessage(null), 4500);
+      }
+    } catch (err) {
+      console.error('Raise dispute error:', err);
+    } finally {
+      setFilingDispute(false);
     }
   };
 
@@ -317,12 +360,12 @@ export const BuyerDashboard: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-black text-agro-text">Active Shipments & Inbound Deliveries</h3>
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-start justify-between pb-4 border-b border-gray-100 mb-4">
+          <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm space-y-4">
+            <div className="flex items-start justify-between pb-4 border-b border-gray-100">
               <div>
                 <span className="text-xs font-black text-blue-600 uppercase">Order #DEAL-AGV-2026-8841</span>
                 <h4 className="text-xl font-bold text-agro-text mt-0.5">100 Quintals Onion (Grade A)</h4>
-                <div className="text-xs text-gray-500">Supplier: Shivneri Agri Farmers Producer Co.</div>
+                <div className="text-xs text-gray-500">Supplier: Shivneri Agri Farmers Producer Co. (Gold Tier)</div>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-black text-agro-dark">₹2,82,000</div>
@@ -337,6 +380,32 @@ export const BuyerDashboard: React.FC = () => {
               <div>
                 <div className="font-bold text-blue-900">Mahalaxmi Agro Logistics (Vehicle: MH-14-CW-4921)</div>
                 <div className="text-blue-700 mt-0.5">Dispatched from Narayangaon Hub • Arriving at Gultekdi Mandi at approx. 6:00 PM</div>
+              </div>
+            </div>
+
+            {/* Delivery Actions: Accept or Raise Dispute */}
+            <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div>
+                <span className="font-bold text-agro-dark">Quality Inspection Sign-Off:</span>
+                <p className="text-gray-500">Upon vehicle arrival, verify lot grading against the digital AI certificate before final payout.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setIsDisputeModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 font-bold transition-all"
+                >
+                  ⚠️ Raise Dispute
+                </button>
+                <button
+                  onClick={() => {
+                    setSuccessMessage('Delivery verified! Escrow payout released to Shivneri FPC and participating farmers.');
+                    setTimeout(() => setSuccessMessage(null), 4000);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm transition-all flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Accept & Release Escrow</span>
+                </button>
               </div>
             </div>
           </div>
@@ -480,6 +549,94 @@ export const BuyerDashboard: React.FC = () => {
                   className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700"
                 >
                   Confirm & Submit Bid
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================
+          MODAL: RAISE QUALITY / DELIVERY DISPUTE
+          =================================================================== */}
+      {isDisputeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-gray-200 shadow-2xl relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-rose-100 text-rose-700 text-lg">⚠️</span>
+                <h3 className="text-xl font-extrabold text-agro-text">File Trade Variance Claim</h3>
+              </div>
+              <button
+                onClick={() => setIsDisputeModalOpen(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mb-4">
+              Order: <strong>#DEAL-AGV-2026-8841 (Shivneri Agri FPC)</strong> • Escalated to MSAMB State Market Tribunal for independent arbitration.
+            </p>
+
+            <form onSubmit={handleRaiseDisputeSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-agro-text mb-1">Dispute Category</label>
+                <select
+                  value={disputeCategory}
+                  onChange={e => setDisputeCategory(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-sm font-bold bg-white outline-none"
+                >
+                  <option value="QUALITY_MISMATCH">Quality / Moisture Variance (3%+ above Grade A)</option>
+                  <option value="WEIGHT_SHORTAGE">Mandi Scale Weight Shortage (&gt; 2% tolerance)</option>
+                  <option value="DAMAGED_IN_TRANSIT">Physical Transit Bruising / Sunscald Damage</option>
+                  <option value="DELIVERY_DELAY">Severe Logistics Delay (&gt; 24h ETA breach)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-agro-text mb-1">Claimed Compensation / Variance Amount (₹)</label>
+                <input
+                  type="number"
+                  required
+                  min="500"
+                  max="50000"
+                  value={disputeClaimAmount}
+                  onChange={e => setDisputeClaimAmount(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-base font-black text-rose-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-agro-text mb-1">Inspection Findings & Specific Reason</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={disputeReason}
+                  onChange={e => setDisputeReason(e.target.value)}
+                  placeholder="Describe defects observed upon unleading at APMC..."
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs text-gray-700 outline-none focus:border-rose-500"
+                />
+              </div>
+
+              <div className="p-3 bg-rose-50 rounded-xl border border-rose-100 text-[11px] text-rose-800">
+                Escrow protection is active. Upon submission, the contested ₹{disputeClaimAmount} will remain locked in escrow until MSAMB tribunal review.
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsDisputeModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={filingDispute}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all"
+                >
+                  {filingDispute ? 'Filing...' : 'Submit Claim to Tribunal'}
                 </button>
               </div>
             </form>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type UserRole = 'FARMER' | 'FPO' | 'BUYER';
+export type UserRole = 'FARMER' | 'FPO' | 'BUYER' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -14,6 +14,7 @@ export interface User {
   trustScore?: number;
   contactPerson?: string;
   registrationNumber?: string;
+  department?: string;
 }
 
 interface AuthContextType {
@@ -108,6 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else if (role === 'BUYER') {
       email = 'buyer@agrovision.in';
       password = 'buyer123';
+    } else if (role === 'ADMIN') {
+      email = 'admin@agrovision.in';
+      password = 'admin123';
     }
     await login({ email, password });
   };

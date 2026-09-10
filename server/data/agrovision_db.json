@@ -1,6 +1,38 @@
 {
   "users": [
     {
+      "id": "user_1788978868505_977",
+      "createdAt": "2026-09-09T18:34:28.505Z",
+      "name": "Harshvardhan Pandit",
+      "mobile": "9021715564",
+      "email": "harshvardhanpandit447@gmail.com",
+      "role": "FARMER",
+      "password": "Harsh@123",
+      "village": "latur",
+      "taluka": "Junnar",
+      "district": "Pune",
+      "state": "Maharashtra",
+      "registrationNumber": "",
+      "gstin": "",
+      "trustScore": 88
+    },
+    {
+      "id": "user_1788978745297_175",
+      "createdAt": "2026-09-09T18:32:25.297Z",
+      "name": "Harshvardhan Pandit",
+      "mobile": "3",
+      "email": "harshvardhanpandit447@gmail.com",
+      "role": "FARMER",
+      "password": "546464",
+      "village": "45644",
+      "taluka": "Junnar",
+      "district": "Pune",
+      "state": "Maharashtra",
+      "registrationNumber": "",
+      "gstin": "",
+      "trustScore": 88
+    },
+    {
       "id": "usr_farmer_01",
       "name": "Sopanrao Patil",
       "email": "farmer@agrovision.in",
@@ -8,42 +40,69 @@
       "role": "FARMER",
       "password": "farmer123",
       "village": "Otur",
+      "taluka": "Junnar",
       "district": "Pune",
       "state": "Maharashtra",
-      "createdAt": "2026-01-15T10:00:00.000Z"
+      "contactPerson": null,
+      "registrationNumber": null,
+      "trustScore": 90,
+      "aggregationCapacity": null,
+      "warehouseLocation": null,
+      "verified": false,
+      "gstin": null,
+      "city": null,
+      "buyerType": null,
+      "createdAt": "2026-01-15T10:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
+      "department": null
     },
     {
       "id": "usr_fpo_01",
       "name": "Shivneri Agri Farmers Producer Co.",
-      "contactPerson": "Sachin Darekar (CEO)",
       "email": "fpo@agrovision.in",
       "mobile": "9850123456",
       "role": "FPO",
       "password": "fpo123",
-      "registrationNumber": "U01409PN2018PTC178942",
+      "village": null,
       "taluka": "Junnar",
       "district": "Pune",
       "state": "Maharashtra",
+      "contactPerson": "Sachin Darekar (CEO)",
+      "registrationNumber": "U01409PN2018PTC178942",
       "trustScore": 94,
       "aggregationCapacity": "500 Quintals/week",
       "warehouseLocation": "Narayangaon Hub, Pune-Nashik Highway",
       "verified": true,
-      "createdAt": "2026-01-10T10:00:00.000Z"
+      "gstin": null,
+      "city": null,
+      "buyerType": null,
+      "createdAt": "2026-01-10T10:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
+      "department": null
     },
     {
       "id": "usr_buyer_01",
       "name": "Sahyadri Fresh Wholesale Pvt Ltd",
-      "contactPerson": "Rajesh Mehta",
       "email": "buyer@agrovision.in",
       "mobile": "9890123456",
       "role": "BUYER",
       "password": "buyer123",
+      "village": null,
+      "taluka": null,
+      "district": "Pune",
+      "state": "Maharashtra",
+      "contactPerson": "Rajesh Mehta",
+      "registrationNumber": null,
+      "trustScore": 92,
+      "aggregationCapacity": null,
+      "warehouseLocation": null,
+      "verified": false,
       "gstin": "27AABCS1429B1Z8",
       "city": "Pune",
-      "state": "Maharashtra",
       "buyerType": "Institutional Wholesaler & Supermarket Supplier",
-      "trustScore": 92,
-      "createdAt": "2026-01-12T10:00:00.000Z"
+      "createdAt": "2026-01-12T10:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
+      "department": null
     }
   ],
   "fpos": [
@@ -68,10 +127,13 @@
       "trustScore": 94,
       "verificationStatus": "VERIFIED_FPC",
       "completedTrades": 128,
-      "storageFacility": "500 MT Ventilated Onion Chawl & Cold Hub"
+      "storageFacility": "500 MT Ventilated Onion Chawl & Cold Hub",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "fpo_02",
+      "userId": null,
       "name": "Junnar Taluka Agro Farmers FPC",
       "district": "Pune",
       "taluka": "Junnar",
@@ -90,10 +152,13 @@
       "trustScore": 91,
       "verificationStatus": "VERIFIED_FPC",
       "completedTrades": 86,
-      "storageFacility": "200 MT Pre-cooling Center"
+      "storageFacility": "200 MT Pre-cooling Center",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "fpo_03",
+      "userId": null,
       "name": "Baramati Agro Vikas FPC",
       "district": "Pune",
       "taluka": "Baramati",
@@ -112,10 +177,13 @@
       "trustScore": 96,
       "verificationStatus": "VERIFIED_FPC",
       "completedTrades": 210,
-      "storageFacility": "1000 MT Multi-commodity Cold Storage"
+      "storageFacility": "1000 MT Multi-commodity Cold Storage",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "fpo_04",
+      "userId": null,
       "name": "Khed Farmers Producer Co. Ltd.",
       "district": "Pune",
       "taluka": "Khed",
@@ -134,10 +202,13 @@
       "trustScore": 89,
       "verificationStatus": "VERIFIED_FPC",
       "completedTrades": 74,
-      "storageFacility": "300 MT Standard Warehouse"
+      "storageFacility": "300 MT Standard Warehouse",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "fpo_05",
+      "userId": null,
       "name": "Indrayani Agri FPC",
       "district": "Pune",
       "taluka": "Maval",
@@ -155,52 +226,12 @@
       "trustScore": 92,
       "verificationStatus": "VERIFIED_FPC",
       "completedTrades": 92,
-      "storageFacility": "Temperature Controlled Hub"
+      "storageFacility": "Temperature Controlled Hub",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     }
   ],
   "produces": [
-    {
-      "id": "prod_1788885873779_667",
-      "createdAt": "2026-09-08T16:44:33.779Z",
-      "farmerId": "usr_farmer_01",
-      "farmerName": "Sopanrao Patil",
-      "farmerMobile": "9822012345",
-      "commodity": "Soybean",
-      "category": "Field Crops",
-      "quantity": 70,
-      "unit": "Quintal",
-      "harvestDate": "2026-03-06",
-      "location": "Otur, Junnar, Pune",
-      "assignedFpoId": "fpo_03",
-      "assignedFpoName": "Baramati Agro Vikas FPC",
-      "qualityGrade": "Grade A",
-      "qualityConfidence": 92,
-      "photoUrl": "",
-      "status": "SUBMITTED",
-      "estimatedNetRealisation": 2540,
-      "submittedAt": "2026-09-08T16:44:33.779Z"
-    },
-    {
-      "id": "prod_1788809062845_602",
-      "createdAt": "2026-09-07T19:24:22.845Z",
-      "farmerId": "usr_farmer_01",
-      "farmerName": "Sopanrao Patil",
-      "farmerMobile": "9822012345",
-      "commodity": "Onion",
-      "category": "Vegetables",
-      "quantity": 50,
-      "unit": "Quintal",
-      "harvestDate": "2026-03-05",
-      "location": "Otur, Junnar, Pune",
-      "assignedFpoId": "usr_fpo_01",
-      "assignedFpoName": "Shivneri Agri Farmers Producer Co.",
-      "qualityGrade": "Grade A",
-      "qualityConfidence": 92,
-      "photoUrl": "",
-      "status": "SUBMITTED",
-      "estimatedNetRealisation": 2540,
-      "submittedAt": "2026-09-07T19:24:22.845Z"
-    },
     {
       "id": "prod_01",
       "farmerId": "usr_farmer_01",
@@ -217,18 +248,20 @@
       "qualityGrade": "Grade A",
       "qualityConfidence": 92,
       "aiAnalysis": {
+        "skinCondition": "Tunic intact, dry neck",
         "sizeUniformity": "94% (55-65mm)",
-        "surfaceBlemishes": "2.1%",
-        "skinCondition": "Tunic intact, dry neck"
+        "surfaceBlemishes": "2.1%"
       },
       "status": "AGGREGATED",
       "lotId": "lot_01",
-      "submittedAt": "2026-03-03T09:30:00.000Z",
-      "estimatedNetRealisation": 2560
+      "submittedAt": "2026-03-03T09:30:00+00:00",
+      "estimatedNetRealisation": 2560,
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "prod_02",
-      "farmerId": "usr_farmer_02",
+      "farmerId": null,
       "farmerName": "Khanderao Thorat",
       "farmerMobile": "9822987654",
       "commodity": "Onion",
@@ -241,13 +274,42 @@
       "assignedFpoName": "Shivneri Agri Farmers Producer Co.",
       "qualityGrade": "Grade A",
       "qualityConfidence": 90,
+      "aiAnalysis": null,
       "status": "AGGREGATED",
       "lotId": "lot_01",
-      "submittedAt": "2026-03-02T11:00:00.000Z",
-      "estimatedNetRealisation": 2560
+      "submittedAt": "2026-03-02T11:00:00+00:00",
+      "estimatedNetRealisation": 2560,
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     }
   ],
   "lots": [
+    {
+      "id": "lot_02",
+      "lotNumber": "LOT-PUN-TM-2026-04",
+      "fpoId": "usr_fpo_01",
+      "fpoName": "Shivneri Agri Farmers Producer Co.",
+      "fpoTrustScore": 94,
+      "commodity": "Tomato",
+      "category": "Vegetables",
+      "totalQuantity": 85,
+      "unit": "Quintal",
+      "qualityGrade": "Grade A",
+      "qualityConfidence": 93,
+      "expectedPricePerQuintal": 2150,
+      "minAcceptablePrice": 2000,
+      "pickupHub": "Shivneri Hub, Narayangaon, Pune",
+      "location": "Pune",
+      "status": "OPEN_FOR_MATCHING",
+      "participatingFarmerIds": [
+        "usr_farmer_03"
+      ],
+      "produceIds": [
+        "prod_03"
+      ],
+      "createdAt": "2026-03-04T10:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
+    },
     {
       "id": "lot_01",
       "lotNumber": "LOT-PUN-ON-2026-01",
@@ -273,69 +335,44 @@
         "prod_01",
         "prod_02"
       ],
-      "createdAt": "2026-03-03T14:00:00.000Z",
-      "updatedAt": "2026-09-07T19:35:10.722Z"
-    },
-    {
-      "id": "lot_02",
-      "lotNumber": "LOT-PUN-TM-2026-04",
-      "fpoId": "usr_fpo_01",
-      "fpoName": "Shivneri Agri Farmers Producer Co.",
-      "fpoTrustScore": 94,
-      "commodity": "Tomato",
-      "category": "Vegetables",
-      "totalQuantity": 85,
-      "unit": "Quintal",
-      "qualityGrade": "Grade A",
-      "qualityConfidence": 93,
-      "expectedPricePerQuintal": 2150,
-      "minAcceptablePrice": 2000,
-      "pickupHub": "Shivneri Hub, Narayangaon, Pune",
-      "location": "Pune",
-      "status": "OPEN_FOR_MATCHING",
-      "participatingFarmerIds": [
-        "usr_farmer_03"
-      ],
-      "produceIds": [
-        "prod_03"
-      ],
-      "createdAt": "2026-03-04T10:00:00.000Z"
+      "createdAt": "2026-03-03T14:00:00+00:00",
+      "updatedAt": "2026-09-09T14:50:33.825+00:00"
     }
   ],
   "requirements": [
     {
-      "id": "requ_1788885726845_94",
-      "createdAt": "2026-09-08T16:42:06.845Z",
+      "id": "requ_1788973245300_682",
+      "createdAt": "2026-09-09T17:00:45.300Z",
       "buyerId": "usr_buyer_01",
       "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
       "buyerContact": "Rajesh Mehta",
       "buyerTrustScore": 92,
       "commodity": "Pomegranate",
       "category": "Vegetables",
-      "quantity": 100,
+      "quantity": 160,
       "unit": "Quintal",
       "requiredGrade": "Grade A",
       "deliveryLocation": "Pune Market Yard, Gultekdi",
       "neededByDate": "2026-03-20",
-      "targetPricePerQuintal": 2900,
+      "targetPricePerQuintal": 2880,
       "maxPricePerQuintal": 2900,
       "status": "ACTIVE"
     },
     {
-      "id": "requ_1788809420083_493",
-      "createdAt": "2026-09-07T19:30:20.083Z",
+      "id": "requ_1788973222981_137",
+      "createdAt": "2026-09-09T17:00:22.981Z",
       "buyerId": "usr_buyer_01",
       "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
       "buyerContact": "Rajesh Mehta",
       "buyerTrustScore": 92,
-      "commodity": "Onion",
+      "commodity": "Pomegranate",
       "category": "Vegetables",
-      "quantity": 100,
+      "quantity": 160,
       "unit": "Quintal",
       "requiredGrade": "Grade A",
       "deliveryLocation": "Pune Market Yard, Gultekdi",
       "neededByDate": "2026-03-20",
-      "targetPricePerQuintal": 2800,
+      "targetPricePerQuintal": 2880,
       "maxPricePerQuintal": 2900,
       "status": "ACTIVE"
     },
@@ -355,7 +392,8 @@
       "targetPricePerQuintal": 2800,
       "maxPricePerQuintal": 2900,
       "status": "OFFER_IN_PROGRESS",
-      "createdAt": "2026-03-03T16:00:00.000Z"
+      "createdAt": "2026-03-03T16:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "req_02",
@@ -373,10 +411,72 @@
       "targetPricePerQuintal": 2100,
       "maxPricePerQuintal": 2200,
       "status": "ACTIVE",
-      "createdAt": "2026-03-04T09:00:00.000Z"
+      "createdAt": "2026-03-04T09:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
+    },
+    {
+      "id": "requ_1788965509941_411",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "buyerContact": "Rajesh Mehta",
+      "buyerTrustScore": 92,
+      "commodity": "Grapes",
+      "category": "Vegetables",
+      "quantity": 190,
+      "unit": "Quintal",
+      "requiredGrade": "Grade A",
+      "deliveryLocation": "Pune Market Yard, Gultekdi",
+      "neededByDate": "2026-03-20",
+      "targetPricePerQuintal": 2920,
+      "maxPricePerQuintal": 2900,
+      "status": "ACTIVE",
+      "createdAt": "2026-09-09T14:51:49.941+00:00",
+      "updatedAt": "2026-09-09T14:51:50.256121+00:00"
     }
   ],
   "offers": [
+    {
+      "id": "offe_1788964748783_488",
+      "lotId": "lot_01",
+      "lotNumber": "LOT-PUN-ON-2026-01",
+      "requirementId": null,
+      "fpoId": "usr_fpo_01",
+      "fpoName": "Shivneri Agri Farmers Producer Co.",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "commodity": "Onion",
+      "quantity": 100,
+      "unit": "Quintal",
+      "qualityGrade": "Grade A",
+      "offeredPricePerQuintal": 2850,
+      "buyerCounterPrice": 2820,
+      "status": "BUYER_COUNTERED",
+      "deliveryTerms": "Ex-FPO Warehouse (FPO coordinates verified transport)",
+      "paymentTerms": "100% Escrow secured on transit initiation",
+      "createdAt": "2026-09-09T14:39:08.783+00:00",
+      "updatedAt": "2026-09-09T14:39:09.403127+00:00"
+    },
+    {
+      "id": "offe_1788964757982_580",
+      "lotId": "lot_01",
+      "lotNumber": "LOT-PUN-ON-2026-01",
+      "requirementId": null,
+      "fpoId": "usr_fpo_01",
+      "fpoName": "Shivneri Agri Farmers Producer Co.",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "commodity": "Onion",
+      "quantity": 100,
+      "unit": "Quintal",
+      "qualityGrade": "Grade A",
+      "offeredPricePerQuintal": 2850,
+      "buyerCounterPrice": 2820,
+      "status": "BUYER_COUNTERED",
+      "deliveryTerms": "Ex-FPO Warehouse (FPO coordinates verified transport)",
+      "paymentTerms": "100% Escrow secured on transit initiation",
+      "createdAt": "2026-09-09T14:39:17.982+00:00",
+      "updatedAt": "2026-09-09T14:39:18.223699+00:00"
+    },
     {
       "id": "off_01",
       "lotId": "lot_01",
@@ -395,35 +495,11 @@
       "status": "CONVERTED_TO_DEAL",
       "deliveryTerms": "Ex-FPO Warehouse (FPO arranges transport, buyer reimburses ₹75/q)",
       "paymentTerms": "100% Escrow on dispatch, release upon APMC weighment verification",
-      "createdAt": "2026-03-04T12:00:00.000Z",
-      "updatedAt": "2026-09-07T19:35:10.720Z"
+      "createdAt": "2026-03-04T12:00:00+00:00",
+      "updatedAt": "2026-09-09T14:50:33.821+00:00"
     }
   ],
   "transactions": [
-    {
-      "id": "tran_1788809710751_827",
-      "createdAt": "2026-09-07T19:35:10.751Z",
-      "dealNumber": "DEAL-AGV-0751",
-      "offerId": "off_01",
-      "lotId": "lot_01",
-      "lotNumber": "LOT-PUN-ON-2026-01",
-      "fpoId": "usr_fpo_01",
-      "fpoName": "Shivneri Agri Farmers Producer Co.",
-      "buyerId": "usr_buyer_01",
-      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
-      "commodity": "Onion (Grade A)",
-      "quantity": 100,
-      "unit": "Quintal",
-      "agreedRatePerQuintal": 2820,
-      "grossTotal": 282000,
-      "logisticsCost": 7500,
-      "netToFpo": 274500,
-      "farmerPayoutStatus": "ESCROW_FUNDED",
-      "dealStatus": "CONFIRMED",
-      "transporter": "Mahalaxmi Agri Logistics (MH-14-CW-4921)",
-      "trackingStatus": "Vehicle dispatched for loading at Narayangaon Hub",
-      "estimatedDelivery": "Tomorrow, 11:00 AM"
-    },
     {
       "id": "txn_01",
       "dealNumber": "DEAL-AGV-2026-8841",
@@ -447,23 +523,25 @@
       "estimatedDelivery": "Today, 6:00 PM",
       "payoutBreakdown": [
         {
+          "status": "PENDING_RELEASE",
           "farmerId": "usr_farmer_01",
           "farmerName": "Sopanrao Patil",
-          "quantitySupplied": 50,
-          "ratePerQuintal": 2745,
           "totalPayable": 137250,
-          "status": "PENDING_RELEASE"
+          "ratePerQuintal": 2745,
+          "quantitySupplied": 50
         },
         {
+          "status": "PENDING_RELEASE",
           "farmerId": "usr_farmer_02",
           "farmerName": "Khanderao Thorat",
-          "quantitySupplied": 50,
-          "ratePerQuintal": 2745,
           "totalPayable": 137250,
-          "status": "PENDING_RELEASE"
+          "ratePerQuintal": 2745,
+          "quantitySupplied": 50
         }
       ],
-      "createdAt": "2026-03-05T09:00:00.000Z"
+      "createdAt": "2026-03-05T09:00:00+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
+      "offerId": null
     }
   ],
   "marketPrices": [
@@ -479,7 +557,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 4250,
       "trend": "INCREASING",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_02",
@@ -493,7 +573,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 3100,
       "trend": "INCREASING",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_03",
@@ -507,7 +589,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 2800,
       "trend": "STABLE",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_04",
@@ -521,7 +605,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 3500,
       "trend": "INCREASING",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_05",
@@ -535,7 +621,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 1400,
       "trend": "INCREASING",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_06",
@@ -549,7 +637,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 950,
       "trend": "STABLE",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_07",
@@ -563,7 +653,9 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 1800,
       "trend": "STABLE",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "mkt_08",
@@ -577,34 +669,21 @@
       "unit": "₹ / Quintal",
       "arrivalsQuintals": 5200,
       "trend": "STABLE",
-      "lastUpdated": "Today"
+      "lastUpdated": "Today",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
     }
   ],
   "notifications": [
-    {
-      "id": "noti_1788885873781_860",
-      "createdAt": "2026-09-08T16:44:33.782Z",
-      "recipientId": "fpo_03",
-      "title": "New Farmer Produce Request",
-      "message": "Sopanrao Patil submitted 70 Quintal of Soybean (Grade A).",
-      "type": "NEW_PRODUCE_SUBMISSION"
-    },
-    {
-      "id": "noti_1788809062847_251",
-      "createdAt": "2026-09-07T19:24:22.847Z",
-      "recipientId": "usr_fpo_01",
-      "title": "New Farmer Produce Request",
-      "message": "Sopanrao Patil submitted 50 Quintal of Onion (Grade A).",
-      "type": "NEW_PRODUCE_SUBMISSION"
-    },
     {
       "id": "notif_01",
       "recipientId": "usr_farmer_01",
       "title": "Produce Aggregated by FPO",
       "message": "Your 50 Quintals of Onion have been aggregated into Lot LOT-PUN-ON-2026-01 by Shivneri FPC.",
       "type": "PRODUCE_AGGREGATED",
-      "timestamp": "2026-03-03T14:15:00.000Z",
-      "read": false
+      "read": false,
+      "timestamp": "2026-03-03T14:15:00+00:00",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "notif_02",
@@ -612,8 +691,9 @@
       "title": "Counter Offer Received from Buyer",
       "message": "Sahyadri Fresh Wholesale offered ₹2,820/q for 100 Quintals Onion.",
       "type": "OFFER_RECEIVED",
-      "timestamp": "2026-03-04T15:30:00.000Z",
-      "read": false
+      "read": false,
+      "timestamp": "2026-03-04T15:30:00+00:00",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00"
     },
     {
       "id": "notif_03",
@@ -621,8 +701,9 @@
       "title": "Dispatch Initiated by FPO",
       "message": "Lot LOT-PUN-ON-2026-01 is dispatched via Mahalaxmi Logistics to Pune Market Yard.",
       "type": "DISPATCH_ALERT",
-      "timestamp": "2026-03-05T09:15:00.000Z",
-      "read": false
+      "read": false,
+      "timestamp": "2026-03-05T09:15:00+00:00",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00"
     }
   ]
 }

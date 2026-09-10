@@ -17,16 +17,144 @@ import {
   Coins,
   ChevronRight,
   Eye,
-  Sprout
+  Sprout,
+  ExternalLink,
+  Globe
 } from 'lucide-react';
 
 interface HomeSectionsProps {
   onNavigate: (view: string) => void;
-  onQuickDemo: (role: 'FARMER' | 'FPO' | 'BUYER') => void;
+  onQuickDemo: (role: 'FARMER' | 'FPO' | 'BUYER' | 'ADMIN') => void;
 }
+
+const HOME_CROPS = [
+  {
+    key: 'onion',
+    nameEn: 'Onion',
+    nameMr: 'कांदा',
+    icon: '🧅',
+    spotPrice: 2800,
+    predictedRange: '₹2,946 – ₹3,606',
+    growthPct: '+10.5%',
+    confidence: '88%',
+    recommendation: 'STORE',
+    verdictEn: 'FPO Storage Recommended',
+    verdictMr: 'FPO गोदामात साठवणूक फायदेशीर',
+    storageType: 'Ventilated Chawl (कांदा चाळ)',
+    shrinkage: '3.5% – 4.2% / month',
+    adviceEn: 'Projected price rise (+₹350/q) comfortably exceeds warehouse holding costs & moisture loss. Storing through FPO yields highest net realisation.',
+    adviceMr: 'भाववाढ (+₹३५०/क्विंटल) ही साठवणूक आणि घट खर्चापेक्षा जास्त आहे. FPO गोदामात माल साठवणे अत्यंत फायदेशीर ठरेल.'
+  },
+  {
+    key: 'tomato',
+    nameEn: 'Tomato',
+    nameMr: 'टोमॅटो',
+    icon: '🍅',
+    spotPrice: 2100,
+    predictedRange: '₹2,066 – ₹2,752',
+    growthPct: '+14.2%',
+    confidence: '90%',
+    recommendation: 'WAIT',
+    verdictEn: 'Wait 7-10 Days Window',
+    verdictMr: 'पुढील ७-१० दिवस वाट पहा',
+    storageType: 'Cold Room (8-12°C)',
+    shrinkage: '12% – 16% / month',
+    adviceEn: 'Market arrivals stabilizing. Waiting 7–10 days offers higher spot bids in Narayangaon & Delhi dispatches, but avoid storing past 2 weeks without cold storage.',
+    adviceMr: 'बाजारातील आवक स्थिर होत आहे. पुढील ७-१० दिवसांत चांगला भाव मिळण्याची शक्यता आहे, मात्र साध्या साठवणुकीत जास्त दिवस ठेवू नका.'
+  },
+  {
+    key: 'grapes',
+    nameEn: 'Grapes',
+    nameMr: 'द्राक्षे',
+    icon: '🍇',
+    spotPrice: 6500,
+    predictedRange: '₹6,461 – ₹8,163',
+    growthPct: '+12.5%',
+    confidence: '87%',
+    recommendation: 'STORE',
+    verdictEn: 'Pre-Cooling & Cold Store',
+    verdictMr: 'प्री-कूलिंग व शीतगृह साठवणूक',
+    storageType: 'Pre-Cooling 0°C + SO2 Pads',
+    shrinkage: '4.5% – 6.0% / month',
+    adviceEn: 'Strong export & domestic demand for table grapes. Pre-cooling to 0°C with SO2 pads enables lucrative delayed sales at ₹7,800+ in Baramati & Nashik hubs.',
+    adviceMr: 'निर्यात आणि स्थानिक बाजारात मोठी मागणी. ०°C प्री-कूलिंग करून शीतगृहात साठवल्यास ₹७,८००+ पर्यंत जादा दर मिळणे शक्य.'
+  },
+  {
+    key: 'pomegranate',
+    nameEn: 'Pomegranate',
+    nameMr: 'डाळिंब',
+    icon: '🍎',
+    spotPrice: 8200,
+    predictedRange: '₹8,262 – ₹9,700',
+    growthPct: '+9.8%',
+    confidence: '89%',
+    recommendation: 'STORE',
+    verdictEn: 'Tree Holding & FPO Export',
+    verdictMr: 'झाडावर होल्डिंग व निर्यात',
+    storageType: 'Cold Storage (5°C)',
+    shrinkage: '3.0% – 4.0% / month',
+    adviceEn: 'Bhagwa variety aril quality is premium. Holding on trees or in 5°C cold storage yields +₹580/q superior realization from Gulf exporters.',
+    adviceMr: 'भगवा डाळिंबाची प्रत उत्तम आहे. झाडावर किंवा शीतगृहात काही दिवस ठेवून निर्यातदारांना थेट विकल्यास मोठा फायदा होईल.'
+  },
+  {
+    key: 'soybean',
+    nameEn: 'Soybean',
+    nameMr: 'सोयाबीन',
+    icon: '🌱',
+    spotPrice: 4650,
+    predictedRange: '₹4,710 – ₹5,554',
+    growthPct: '+8.5%',
+    confidence: '92%',
+    recommendation: 'STORE',
+    verdictEn: 'Dry Warehouse Long-Term',
+    verdictMr: 'दीर्घकालीन गोदाम साठवणूक',
+    storageType: 'Dry Bag Warehouse (गोदाम)',
+    shrinkage: '0.5% – 0.8% / month',
+    adviceEn: 'Dry grain storage (<10% moisture) has negligible holding cost (₹25/q/month). Storing 1-3 months avoids post-harvest glut and captures oil mill price peaks.',
+    adviceMr: '१०% पेक्षा कमी ओलावा असल्याने अत्यंत कमी खर्चात दीर्घकाळ साठवणूक शक्य. स्थानिक तेलगिरण्यांकडून जादा दर मिळतील.'
+  },
+  {
+    key: 'cabbage',
+    nameEn: 'Cabbage',
+    nameMr: 'कोबी',
+    icon: '🥬',
+    spotPrice: 1400,
+    predictedRange: '₹1,364 – ₹1,828',
+    growthPct: '+11.2%',
+    confidence: '85%',
+    recommendation: 'WAIT',
+    verdictEn: 'Short-Term 5-Day Window',
+    verdictMr: 'अल्पकालीन ५ दिवसांची विंडो',
+    storageType: 'Ventilated Crates',
+    shrinkage: '8.0% – 11.0% / month',
+    adviceEn: 'Urban catering demand is picking up. Sell within 5-7 days before outer wrapper leaf wilting causes weight loss.',
+    adviceMr: 'हॉटेल व केटरिंग मागणी वाढत आहे. पाने कोमेजण्यापूर्वी पुढील ५ ते ७ दिवसांत विक्री करावी.'
+  },
+  {
+    key: 'sugarcane',
+    nameEn: 'Sugarcane',
+    nameMr: 'ऊस',
+    icon: '🎋',
+    spotPrice: 3150,
+    predictedRange: '₹3,161 – ₹3,351',
+    growthPct: '+3.2%',
+    confidence: '94%',
+    recommendation: 'SELL_NOW',
+    verdictEn: 'Direct Immediate Mill Crushing',
+    verdictMr: 'थेट साखर कारखान्याला पुरवठा',
+    storageType: 'Direct Field to Mill Delivery',
+    shrinkage: '2% weight loss per 24h',
+    adviceEn: 'Sucrose inversion begins 48h post-cut. Direct delivery to Baramati/Daund sugar mills ensures maximum recovery bonus and zero weight deduction.',
+    adviceMr: 'तोडणीनंतर त्वरित कारखान्याला पोहोचवल्यास जास्तीत जास्त रिकव्हरी व हमीभाव मिळतो.'
+  }
+];
 
 export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickDemo }) => {
   const { language, t } = useLanguage();
+
+  // Selected crop in ML Prediction section
+  const [selectedCropKey, setSelectedCropKey] = useState<string>('onion');
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
   // Net Realisation interactive preview state
   const [grossPrice, setGrossPrice] = useState<number>(2800);
@@ -34,6 +162,23 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
   const [storageCost, setStorageCost] = useState<number>(40);
   const [handlingCost, setHandlingCost] = useState<number>(20);
   const [spoilageLoss, setSpoilageLoss] = useState<number>(100);
+
+  const currentCrop = HOME_CROPS.find(c => c.key === selectedCropKey) || HOME_CROPS[0];
+
+  const handleSelectCrop = (cropKey: string) => {
+    setSelectedCropKey(cropKey);
+    const crop = HOME_CROPS.find(c => c.key === cropKey);
+    if (crop) {
+      setGrossPrice(crop.spotPrice);
+    }
+  };
+
+  const handleCopyHostLink = () => {
+    const link = `${window.location.origin}/#market-intelligence`;
+    navigator.clipboard?.writeText(link);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   const totalDeductions = transportCost + storageCost + handlingCost + 25 + spoilageLoss;
   const netRealisation = Math.max(0, grossPrice - totalDeductions);
@@ -560,45 +705,94 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
               </div>
             </div>
 
-            {/* Right: ML Price Range & Recommendation Preview */}
+            {/* Right: ML Price Range & Interactive Crop Selector */}
             <div className="lg:col-span-5 space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-agro-light shadow-md">
-                <div className="flex items-center justify-between mb-4">
+                {/* Card Header with Confidence Badge */}
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-agro-primary" />
-                    <h4 className="font-bold text-agro-text">{t('marketIntel.predictedPrice')}</h4>
+                    <h4 className="font-extrabold text-agro-text">{t('marketIntel.predictedPrice')}</h4>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold">
-                    85% {t('marketIntel.confidence')}
+                    {currentCrop.confidence} {t('marketIntel.confidence')}
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-agro-bright/40 mb-4">
-                  <div className="text-xs text-agro-dark/70 font-semibold mb-1">
-                    {language === 'mr' ? 'पुणे बाजारपेठ (पुढील ३ आठवडे अंदाज)' : 'Pune APMC (3-Week Forecast Range)'}
-                  </div>
-                  <div className="text-3xl font-extrabold text-agro-dark">
-                    ₹3,050 – ₹3,180 <span className="text-sm font-medium">/ q</span>
-                  </div>
-                  <div className="text-xs text-emerald-700 font-bold mt-1 flex items-center gap-1">
-                    <span>▲ +10.5% Expected Price Momentum</span>
+                {/* Section to Choose Crops */}
+                <div className="mb-4">
+                  <label className="block text-[11px] font-extrabold text-gray-500 uppercase tracking-wider mb-2">
+                    {language === 'mr' ? '🌾 शेतमाल निवडा (Choose Crop):' : '🌾 Choose Crop to View Prediction:'}
+                  </label>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 p-1 bg-agro-bg rounded-2xl border border-gray-200/80">
+                    {HOME_CROPS.map(crop => {
+                      const isSelected = crop.key === selectedCropKey;
+                      return (
+                        <button
+                          key={crop.key}
+                          type="button"
+                          onClick={() => handleSelectCrop(crop.key)}
+                          className={`p-1.5 sm:p-2 rounded-xl text-center transition-all flex flex-col items-center justify-center ${
+                            isSelected
+                              ? 'bg-agro-primary text-white shadow-md scale-105 font-bold'
+                              : 'bg-white hover:bg-emerald-50 text-gray-700 border border-gray-100'
+                          }`}
+                        >
+                          <span className="text-lg">{crop.icon}</span>
+                          <span className="text-[10px] font-extrabold mt-0.5 truncate w-full">
+                            {language === 'mr' ? crop.nameMr : crop.nameEn}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Sell Now vs Wait vs Store Badge */}
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="px-2 py-0.5 rounded bg-amber-500 text-white font-extrabold text-xs uppercase">
-                      {t('marketIntel.store')}
+                {/* Dynamic Predicted Price Box for Selected Crop */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/50 border border-agro-bright/40 mb-4">
+                  <div className="flex items-center justify-between text-xs text-agro-dark/70 font-semibold mb-1">
+                    <span className="flex items-center gap-1 font-bold text-agro-dark">
+                      <span>{currentCrop.icon}</span>
+                      <span>{language === 'mr' ? currentCrop.nameMr : currentCrop.nameEn} (३ आठवडे अंदाज)</span>
                     </span>
-                    <span className="text-xs font-bold text-amber-900">
-                      {language === 'mr' ? 'गोदामात साठवणूक फायदेशीर' : 'FPO Storage Recommended'}
+                    <span className="text-gray-500 font-medium">Spot: ₹{currentCrop.spotPrice}/q</span>
+                  </div>
+                  <div className="text-3xl font-extrabold text-agro-dark tracking-tight my-1">
+                    {currentCrop.predictedRange} <span className="text-sm font-medium text-gray-600">/ q</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mt-2 pt-2 border-t border-emerald-200/60">
+                    <span className="text-emerald-700 font-extrabold flex items-center gap-1">
+                      <span>▲ {currentCrop.growthPct}</span>
+                      <span className="text-[11px] font-medium text-gray-500">
+                        {language === 'mr' ? 'अपेक्षित तेजी' : 'Price Momentum'}
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-gray-600 font-semibold bg-white/80 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                      {currentCrop.storageType}
                     </span>
                   </div>
-                  <p className="text-xs text-amber-900/80 leading-relaxed">
-                    {language === 'mr'
-                      ? 'भाववाढ (+₹२८०) ही साठवणूक आणि घट खर्चापेक्षा जास्त आहे. FPO गोदामात २ आठवडे माल ठेवल्यास अधिक निव्वळ परतावा मिळेल.'
-                      : 'Projected price rise comfortably exceeds warehouse holding costs & moisture loss. Storing through FPO yields highest net realisation.'}
+                </div>
+
+                {/* Sell Now vs Wait vs Store Badge & Tailored Advisory */}
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-lg text-white font-extrabold text-xs uppercase ${
+                        currentCrop.recommendation === 'STORE'
+                          ? 'bg-emerald-600'
+                          : currentCrop.recommendation === 'WAIT'
+                          ? 'bg-amber-600'
+                          : 'bg-rose-600'
+                      }`}>
+                        {currentCrop.recommendation}
+                      </span>
+                      <span className="text-xs font-bold text-amber-900">
+                        {language === 'mr' ? currentCrop.verdictMr : currentCrop.verdictEn}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-amber-950/90 leading-relaxed font-medium mt-1">
+                    {language === 'mr' ? currentCrop.adviceMr : currentCrop.adviceEn}
                   </p>
                 </div>
               </div>
@@ -632,6 +826,47 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Dedicated Market Intelligence Live Host Portal & Access Banner */}
+          <div className="mt-10 p-6 rounded-3xl bg-gradient-to-r from-emerald-900 via-agro-dark to-teal-950 text-white shadow-xl border border-emerald-700/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center justify-center shrink-0">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[11px] font-extrabold uppercase tracking-wider mb-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  {language === 'mr' ? 'थेट बाजारभाव विश्लेषण लिंक' : 'Live Market Intelligence Portal'}
+                </div>
+                <h4 className="text-lg font-black text-white">
+                  {language === 'mr' ? 'पुणे कृषी बाजारभाव व ML अंदाज पोर्टल' : 'AgroVision Market Intelligence & ML Forecast Host'}
+                </h4>
+                <p className="text-xs text-white/80 mt-0.5 font-mono">
+                  {typeof window !== 'undefined' ? `${window.location.origin}/#market-intelligence` : 'http://localhost:5173/#market-intelligence'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={handleCopyHostLink}
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-4 h-4 text-emerald-300" />
+                <span>{copiedLink ? (language === 'mr' ? 'लिंक कॉपी झाली! ✓' : 'Link Copied! ✓') : (language === 'mr' ? 'पोर्टल लिंक कॉपी करा' : 'Copy Host Link')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onQuickDemo('FARMER')}
+                className="px-5 py-2.5 rounded-xl bg-agro-bright hover:bg-emerald-400 text-agro-dark font-black text-xs shadow-lg shadow-emerald-950/30 transition-all flex items-center gap-1.5"
+              >
+                <span>{language === 'mr' ? 'शेतकरी ML डॅशबोर्ड उघडा' : 'Open Farmer ML Dashboard'}</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -859,28 +1094,34 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
           </h2>
           <p className="text-base sm:text-lg text-emerald-200 max-w-2xl mx-auto mb-10">
             {language === 'mr'
-              ? 'शेतकरी, FPO आणि खरेदीदारांसाठी पारदर्शक कृषी बाजारपेठेत सहभागी व्हा.'
-              : 'Empowering farmers with predictive market intelligence and fair prices through certified FPO aggregation.'}
+              ? 'शेतकरी, FPO, खरेदीदार आणि बाजार नियामक नियंत्रण कक्षामध्ये सहभागी व्हा.'
+              : 'Empowering farmers with predictive market intelligence, certified FPO aggregation, and state regulatory tribunal oversight.'}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => onQuickDemo('FARMER')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-agro-primary hover:bg-agro-bright text-white font-bold text-sm transition-all"
+              className="px-6 py-3.5 rounded-xl bg-agro-primary hover:bg-agro-bright text-white font-bold text-sm transition-all shadow-md"
             >
-              🌾 {language === 'mr' ? 'शेतकरी म्हणून सहभागी व्हा' : 'Register as Farmer'}
+              🌾 {language === 'mr' ? 'शेतकरी डॅशबोर्ड' : 'Demo as Farmer'}
             </button>
             <button
               onClick={() => onQuickDemo('FPO')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white text-agro-dark hover:bg-agro-mint font-bold text-sm transition-all"
+              className="px-6 py-3.5 rounded-xl bg-white text-agro-dark hover:bg-agro-mint font-bold text-sm transition-all shadow-md"
             >
-              🏢 {language === 'mr' ? 'FPO नोंदणी करा' : 'Register as FPO'}
+              🏢 {language === 'mr' ? 'FPO डॅशबोर्ड' : 'Demo as FPO'}
             </button>
             <button
               onClick={() => onQuickDemo('BUYER')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-800 text-white hover:bg-emerald-700 font-bold text-sm transition-all"
+              className="px-6 py-3.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 font-bold text-sm transition-all shadow-md"
             >
-              🛒 {language === 'mr' ? 'खरेदीदार नोंदणी करा' : 'Register as Buyer'}
+              🛒 {language === 'mr' ? 'खरेदीदार डॅशबोर्ड' : 'Demo as Buyer'}
+            </button>
+            <button
+              onClick={() => onQuickDemo('ADMIN')}
+              className="px-6 py-3.5 rounded-xl bg-slate-900 border border-indigo-500/50 text-indigo-200 hover:bg-slate-800 font-bold text-sm transition-all shadow-md"
+            >
+              🏛️ {language === 'mr' ? 'नियामक / Admin कक्ष' : 'Demo as Admin / MSAMB'}
             </button>
           </div>
         </div>
