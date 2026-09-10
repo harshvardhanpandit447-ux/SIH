@@ -27,8 +27,11 @@ const INITIAL_DB = {
       role: 'FARMER',
       password: 'farmer123',
       village: 'Otur',
+      taluka: 'Junnar',
       district: 'Pune',
       state: 'Maharashtra',
+      joinedFpoId: 'usr_fpo_01',
+      joinedFpoName: 'Shivneri Agri Farmers Producer Co.',
       createdAt: '2026-01-15T10:00:00.000Z'
     },
     {
@@ -554,6 +557,26 @@ const INITIAL_DB = {
       },
       createdAt: '2026-03-05T06:00:00.000Z'
     }
+  ],
+  
+  // Farmer FPO Membership Switch / Join Requests
+  fpoMembershipRequests: [
+    {
+      id: 'fpreq_01',
+      farmerId: 'usr_farmer_02',
+      farmerName: 'Khanderao Thorat',
+      farmerMobile: '9822987654',
+      farmerVillage: 'Alephata',
+      farmerTaluka: 'Junnar',
+      farmerDistrict: 'Pune',
+      currentFpoId: 'fpo_02',
+      currentFpoName: 'Junnar Taluka Agro Farmers FPC',
+      targetFpoId: 'usr_fpo_01',
+      targetFpoName: 'Shivneri Agri Farmers Producer Co.',
+      reason: 'Wants to access the 500 MT ventilated onion chawl storage at Narayangaon Hub for summer rabi crop.',
+      status: 'PENDING', // PENDING, ACCEPTED, REJECTED, CANCELLED
+      requestedAt: '2026-03-04T11:20:00.000Z'
+    }
   ]
 };
 
@@ -572,7 +595,14 @@ class DatabaseStore {
       let hasData = false;
       for (const [coll, items] of Object.entries(remoteData)) {
         if (items && items.length > 0) {
-          this.data[coll] = items;
+          if (coll === 'users') {
+            // Merge so usr_admin_01 and essential default roles exist
+            const remoteIds = new Set(items.map(u => u.id));
+            const seedUsers = INITIAL_DB.users.filter(u => !remoteIds.has(u.id));
+            this.data[coll] = [...items, ...seedUsers];
+          } else {
+            this.data[coll] = items;
+          }
           hasData = true;
         }
       }

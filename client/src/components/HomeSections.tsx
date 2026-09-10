@@ -895,19 +895,19 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 <ul className="space-y-3 text-sm text-agro-text/80 mb-6">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>No upfront commodity registration friction</span>
+                    <span>{language === 'mr' ? 'कोणतीही प्राथमिक नोंदणीची अडचण नाही' : 'No upfront commodity registration friction'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Instant AI quality scan & preliminary grade</span>
+                    <span>{language === 'mr' ? 'त्वरित AI गुणवत्ता स्कॅन आणि तात्पुरता ग्रेड' : 'Instant AI quality scan & preliminary grade'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>True Net Realisation calculation before selling</span>
+                    <span>{language === 'mr' ? 'विक्रीपूर्वी निव्वळ नफा (True Net Realisation) गणना' : 'True Net Realisation calculation before selling'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Direct submission to verified local Pune FPO</span>
+                    <span>{language === 'mr' ? 'स्थानिक पुणे FPO कडे थेट शेतमाल सुपूर्द करणे' : 'Direct submission to verified local Pune FPO'}</span>
                   </li>
                 </ul>
               </div>
@@ -915,7 +915,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 onClick={() => onQuickDemo('FARMER')}
                 className="w-full py-3 px-4 rounded-xl bg-white border border-agro-bright text-agro-dark font-bold text-sm hover:bg-agro-mint transition-colors"
               >
-                ⚡ Explore Farmer Portal
+                ⚡ {language === 'mr' ? 'शेतकरी पोर्टल पहा' : 'Explore Farmer Portal'}
               </button>
             </div>
 
@@ -927,19 +927,19 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 <ul className="space-y-3 text-sm text-agro-text/80 mb-6">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Aggregate farmer yields into bulk commercial lots</span>
+                    <span>{language === 'mr' ? 'शेतकऱ्यांचा माल मोठ्या व्यावसायिक लॉट्समध्ये एकत्र करणे' : 'Aggregate farmer yields into bulk commercial lots'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Algorithmic matching with verified institutional buyers</span>
+                    <span>{language === 'mr' ? 'सत्यापित खरेदीदारांशी स्वयंचलित जुळवणी' : 'Algorithmic matching with verified institutional buyers'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Bilateral price negotiation and contract generation</span>
+                    <span>{language === 'mr' ? 'थेट किंमत वाटाघाटी आणि डिजिटल करार निर्मिती' : 'Bilateral price negotiation and contract generation'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-agro-primary shrink-0 mt-0.5" />
-                    <span>Automated farmer payout distribution via escrow</span>
+                    <span>{language === 'mr' ? 'एस्क्रो खात्यातून शेतकऱ्यांना स्वयंचलित थेट वाटप' : 'Automated farmer payout distribution via escrow'}</span>
                   </li>
                 </ul>
               </div>
@@ -947,7 +947,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 onClick={() => onQuickDemo('FPO')}
                 className="w-full py-3 px-4 rounded-xl bg-agro-primary text-white font-bold text-sm hover:bg-agro-dark transition-colors shadow-sm"
               >
-                ⚡ Explore FPO Portal
+                ⚡ {language === 'mr' ? 'FPO पोर्टल पहा' : 'Explore FPO Portal'}
               </button>
             </div>
 
@@ -959,19 +959,19 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 <ul className="space-y-3 text-sm text-agro-text/80 mb-6">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <span>Procure certified Grade A/B lots directly from FPOs</span>
+                    <span>{language === 'mr' ? 'FPO कडून थेट प्रमाणित ग्रेड A/B लॉट खरेदी' : 'Procure certified Grade A/B lots directly from FPOs'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <span>Post forward requirements with specific delivery dates</span>
+                    <span>{language === 'mr' ? 'विशिष्ट वितरण तारखेसह आगाऊ खरेदी मागणी नोंदवणे' : 'Post forward requirements with specific delivery dates'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <span>Reliable FPO Trust Score and trade completion record</span>
+                    <span>{language === 'mr' ? 'विश्वासार्ह FPO विश्वास स्कोअर व व्यवहार इतिहास' : 'Reliable FPO Trust Score and trade completion record'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <span>Live GPS dispatch and escrow release security</span>
+                    <span>{language === 'mr' ? 'थेट GPS ट्रॅकिंग आणि एस्क्रो पेमेंट सुरक्षा' : 'Live GPS dispatch and escrow release security'}</span>
                   </li>
                 </ul>
               </div>
@@ -979,7 +979,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({ onNavigate, onQuickD
                 onClick={() => onQuickDemo('BUYER')}
                 className="w-full py-3 px-4 rounded-xl bg-white border border-agro-bright text-agro-dark font-bold text-sm hover:bg-agro-mint transition-colors"
               >
-                ⚡ Explore Buyer Portal
+                ⚡ {language === 'mr' ? 'खरेदीदार पोर्टल पहा' : 'Explore Buyer Portal'}
               </button>
             </div>
           </div>

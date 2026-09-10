@@ -149,25 +149,39 @@ app.post('/api/auth/register', (req, res) => {
 /* ==========================================================================
    ML INTELLIGENCE & COMPUTER VISION ENDPOINTS
    ========================================================================== */
-// 1. Future Price Prediction ML Model
-app.post('/api/ml/predict-price', (req, res) => {
-  const { commodity, mandi, horizonWeeks, currentPrice } = req.body;
+// 1. Future Price Prediction ML Models (Supports GET & POST)
+const handlePricePrediction = (req, res) => {
+  const commodity = req.query.commodity || req.query.crop || req.body?.commodity || req.body?.crop || req.body?.crop_type || 'onion';
+  const mandi = req.query.mandi || req.body?.mandi || 'Pune Gultekdi';
+  const horizonWeeks = Number(req.query.horizonWeeks || req.query.horizon || req.body?.horizonWeeks || req.body?.horizon || 3);
+  const currentPrice = req.query.currentPrice || req.body?.currentPrice || null;
+
   const prediction = predictFuturePrice(commodity, mandi, horizonWeeks, currentPrice);
-  res.json(prediction);
-});
+  res.json({ success: true, ...prediction });
+};
+
+app.get('/api/ml/predict-future-price', handlePricePrediction);
+app.post('/api/ml/predict-future-price', handlePricePrediction);
+app.get('/api/ml/predict-price', handlePricePrediction);
+app.post('/api/ml/predict-price', handlePricePrediction);
 
 // 2. Net Realisation Calculation Engine
 app.post('/api/ml/net-realisation', (req, res) => {
   const result = calculateNetRealisation(req.body);
-  res.json(result);
+  res.json({ success: true, ...result });
 });
 
-// 3. AI Quality Assessment & Good Quality Detection ML Model
-app.post('/api/ml/assess-quality', (req, res) => {
-  const { commodity, imageInfo } = req.body;
+// 3. AI Quality Assessment & Defect Detection ML Model (Supports GET & POST)
+const handleQualityAssessment = (req, res) => {
+  const commodity = req.query.commodity || req.query.crop || req.query.crop_type || req.body?.commodity || req.body?.crop || req.body?.crop_type || 'onion';
+  const imageInfo = req.body?.imageInfo || req.body?.image_data || req.body?.photoUrl || req.query.photoUrl || {};
+
   const assessment = assessProduceQuality(commodity, imageInfo);
-  res.json(assessment);
-});
+  res.json({ success: true, ...assessment });
+};
+
+app.post('/api/ml/assess-quality', handleQualityAssessment);
+app.get('/api/ml/assess-quality', handleQualityAssessment);
 
 /* ==========================================================================
    MARKET INTELLIGENCE & MANDI RATES
@@ -257,6 +271,194 @@ app.post('/api/farmer/produce', (req, res) => {
 });
 
 /* ==========================================================================
+   FARMER FPO MEMBERSHIP TRANSFER / SWITCH WORKFLOW
+   ========================================================================== */
+// Get farmer's current membership & switch requests history
+app.get('/api/farmer/fpo-membership/:farmerId', (req, res) => {
+  const { farmerId } = req.params;
+  const user = db.findById('users', farmerId);
+  const requests = db.getCollection('fpoMembershipRequests').filter(r => r.farmerId === farmerId);
+  const fpos = db.getCollection('fpos');
+
+  res.json({
+    success: true,
+    farmerId,
+    joinedFpoId: user?.joinedFpoId || 'usr_fpo_01',
+    joinedFpoName: user?.joinedFpoName || 'Shivneri Agri Farmers Producer Co.',
+    requests: requests.sort((a, b) => new Date(b.requestedAt || b.createdAt).getTime() - new Date(a.requestedAt || a.createdAt).getTime()),
+    availableFpos: fpos
+  });
+});
+
+// Farmer submits a request to switch/join a target FPO
+app.post('/api/farmer/fpo-request', (req, res) => {
+  const {
+    farmerId,
+    farmerName,
+    farmerMobile,
+    farmerVillage,
+    farmerTaluka,
+    farmerDistrict,
+    currentFpoId,
+    currentFpoName,
+    targetFpoId,
+    targetFpoName,
+    reason
+  } = req.body;
+
+  if (!farmerId || !targetFpoId) {
+    return res.status(400).json({ error: 'Farmer ID and target FPO are required' });
+  }
+
+  const user = db.findById('users', farmerId);
+  const activeJoinedId = user?.joinedFpoId || currentFpoId || 'usr_fpo_01';
+  if (activeJoinedId === targetFpoId) {
+    return res.status(400).json({ error: 'You are already a member of this FPO' });
+  }
+
+  const existingRequests = db.getCollection('fpoMembershipRequests');
+  const hasPending = existingRequests.some(r => r.farmerId === farmerId && r.status === 'PENDING');
+  if (hasPending) {
+    return res.status(400).json({ error: 'An active switch request is already pending approval' });
+  }
+
+  const newRequest = db.insert('fpoMembershipRequests', {
+    farmerId,
+    farmerName: farmerName || user?.name || 'Sopanrao Patil',
+    farmerMobile: farmerMobile || user?.mobile || '9822012345',
+    farmerVillage: farmerVillage || user?.village || 'Otur',
+    farmerTaluka: farmerTaluka || user?.taluka || 'Junnar',
+    farmerDistrict: farmerDistrict || user?.district || 'Pune',
+    currentFpoId: activeJoinedId,
+    currentFpoName: user?.joinedFpoName || currentFpoName || 'Shivneri Agri Farmers Producer Co.',
+    targetFpoId,
+    targetFpoName: targetFpoName || 'Target FPC',
+    reason: reason || 'Closer aggregation facility / improved storage access',
+    status: 'PENDING',
+    requestedAt: new Date().toISOString()
+  });
+
+  // Notify target FPO
+  db.insert('notifications', {
+    recipientId: targetFpoId,
+    title: 'New Farmer Membership / Transfer Request',
+    message: `${newRequest.farmerName} (${newRequest.farmerVillage}, ${newRequest.farmerTaluka}) requested to join your FPO.`,
+    type: 'MEMBERSHIP_REQUEST'
+  });
+
+  res.json({
+    success: true,
+    message: 'Membership transfer request sent to the targeted FPO. Status is currently pending.',
+    request: newRequest
+  });
+});
+
+// Farmer cancels their pending request
+app.post('/api/farmer/fpo-request/:requestId/cancel', (req, res) => {
+  const { requestId } = req.params;
+  const existing = db.findById('fpoMembershipRequests', requestId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  if (existing.status !== 'PENDING') {
+    return res.status(400).json({ error: 'Only pending requests can be cancelled' });
+  }
+
+  const updated = db.updateById('fpoMembershipRequests', requestId, {
+    status: 'CANCELLED',
+    resolvedAt: new Date().toISOString()
+  });
+
+  res.json({ success: true, message: 'Request cancelled successfully', request: updated });
+});
+
+// FPO gets all incoming membership switch requests
+app.get('/api/fpo/membership-requests/:fpoId', (req, res) => {
+  const { fpoId } = req.params;
+  const all = db.getCollection('fpoMembershipRequests');
+  // Match either userId (usr_fpo_01) or fpoId (fpo_01)
+  const incoming = all.filter(r => 
+    r.targetFpoId === fpoId || 
+    (fpoId === 'usr_fpo_01' && (r.targetFpoId === 'usr_fpo_01' || r.targetFpoId === 'fpo_01'))
+  );
+
+  res.json({
+    success: true,
+    requests: incoming.sort((a, b) => new Date(b.requestedAt || b.createdAt).getTime() - new Date(a.requestedAt || a.createdAt).getTime())
+  });
+});
+
+// FPO accepts or rejects membership request
+app.post('/api/fpo/membership-request/:requestId/respond', (req, res) => {
+  const { requestId } = req.params;
+  const { action, rejectionReason, resolvedBy } = req.body; // action: 'ACCEPT' or 'REJECT'
+
+  const request = db.findById('fpoMembershipRequests', requestId);
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  if (request.status !== 'PENDING') {
+    return res.status(400).json({ error: `Request is already ${request.status}` });
+  }
+
+  if (action === 'ACCEPT') {
+    // 1. Mark request as accepted
+    const updatedRequest = db.updateById('fpoMembershipRequests', requestId, {
+      status: 'ACCEPTED',
+      resolvedAt: new Date().toISOString(),
+      resolvedBy: resolvedBy || 'FPO Manager'
+    });
+
+    // 2. Update the farmer user's joinedFpoId & joinedFpoName
+    db.updateById('users', request.farmerId, {
+      joinedFpoId: request.targetFpoId,
+      joinedFpoName: request.targetFpoName
+    });
+
+    // 3. Notify farmer of acceptance
+    db.insert('notifications', {
+      recipientId: request.farmerId,
+      title: '🎉 FPO Membership Request Accepted!',
+      message: `Congratulations! ${request.targetFpoName} has accepted your membership request. Your primary FPO is now updated.`,
+      type: 'MEMBERSHIP_ACCEPTED'
+    });
+
+    res.json({
+      success: true,
+      message: `Farmer ${request.farmerName} has been enrolled into ${request.targetFpoName}.`,
+      request: updatedRequest,
+      newFpo: {
+        id: request.targetFpoId,
+        name: request.targetFpoName
+      }
+    });
+  } else if (action === 'REJECT') {
+    const updatedRequest = db.updateById('fpoMembershipRequests', requestId, {
+      status: 'REJECTED',
+      rejectionReason: rejectionReason || 'Capacity limitation or non-coverage area',
+      resolvedAt: new Date().toISOString(),
+      resolvedBy: resolvedBy || 'FPO Manager'
+    });
+
+    // Notify farmer of rejection
+    db.insert('notifications', {
+      recipientId: request.farmerId,
+      title: 'FPO Membership Request Update',
+      message: `Your membership request to ${request.targetFpoName} was not approved at this time (${rejectionReason || 'Capacity full'}). Your current FPO membership remains unchanged.`,
+      type: 'MEMBERSHIP_REJECTED'
+    });
+
+    res.json({
+      success: true,
+      message: `Request from ${request.farmerName} has been rejected. Farmer's current FPO remains unchanged.`,
+      request: updatedRequest
+    });
+  } else {
+    return res.status(400).json({ error: 'Invalid action. Must be ACCEPT or REJECT.' });
+  }
+});
+
+/* ==========================================================================
    FPO EXPERIENCE
    FPO is the central bridge: aggregates farmer produce into lots & deals with buyers.
    ========================================================================== */
@@ -268,6 +470,11 @@ app.get('/api/fpo/dashboard/:fpoId', (req, res) => {
   const offers = db.getCollection('offers').filter(o => o.fpoId === fpoId || o.fpoId === 'usr_fpo_01');
   const transactions = db.getCollection('transactions').filter(t => t.fpoId === fpoId || t.fpoId === 'usr_fpo_01');
   const requirements = db.getCollection('requirements');
+  const allRequests = db.getCollection('fpoMembershipRequests');
+  const membershipRequests = allRequests.filter(r => 
+    r.targetFpoId === fpoId || 
+    (fpoId === 'usr_fpo_01' && (r.targetFpoId === 'usr_fpo_01' || r.targetFpoId === 'fpo_01'))
+  );
 
   res.json({
     incomingFarmerRequests: produces.filter(p => p.status === 'SUBMITTED' || p.status === 'UNDER_REVIEW'),
@@ -275,7 +482,8 @@ app.get('/api/fpo/dashboard/:fpoId', (req, res) => {
     activeLots: lots,
     openBuyerRequirements: requirements,
     activeOffers: offers,
-    transactions
+    transactions,
+    membershipRequests
   });
 });
 
@@ -709,6 +917,120 @@ app.get('/api/admin/metrics', (req, res) => {
     },
     supabaseStatus: db.getStatus()
   });
+});
+
+// Admin Overview
+app.get('/api/admin/overview', (req, res) => {
+  const users = db.getCollection('users');
+  const fpos = db.getCollection('fpos');
+  const produces = db.getCollection('produces');
+  const lots = db.getCollection('lots');
+  const transactions = db.getCollection('transactions');
+  const disputes = db.getCollection('disputes');
+  const marketPrices = db.getCollection('marketPrices');
+
+  const totalTradeVolume = transactions.reduce((acc, t) => acc + (t.grossTotal || 0), 0);
+  const totalQuantityTraded = transactions.reduce((acc, t) => acc + (t.quantity || 0), 0);
+  const activeEscrowAmount = transactions
+    .filter(t => t.farmerPayoutStatus === 'ESCROW_FUNDED' || t.dealStatus === 'IN_TRANSIT')
+    .reduce((acc, t) => acc + (t.grossTotal || 0), 0);
+  
+  const openDisputes = disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_ARBITRATION').length;
+
+  res.json({
+    success: true,
+    metrics: {
+      registeredFarmers: users.filter(u => u.role === 'FARMER').length,
+      registeredFPOs: fpos.length,
+      verifiedBuyers: users.filter(u => u.role === 'BUYER').length,
+      totalProducesSubmitted: produces.length,
+      activeLots: lots.length,
+      completedTransactions: transactions.length,
+      totalTradeVolumeINR: totalTradeVolume,
+      totalQuantityQuintals: totalQuantityTraded,
+      activeEscrowSecuredINR: activeEscrowAmount,
+      openDisputesCount: openDisputes,
+      apmcMandisMonitored: marketPrices.length,
+      avgFarmerGainPercentage: '+22.4% Net Realisation over Traditional Intermediary'
+    },
+    users,
+    fpos,
+    apmcFeeds: marketPrices,
+    lots,
+    transactions,
+    disputes,
+    supabaseStatus: db.getStatus()
+  });
+});
+
+// Admin Disputes
+app.get('/api/admin/disputes', (req, res) => {
+  const disputes = db.getCollection('disputes');
+  res.json({ success: true, disputes });
+});
+
+// Admin Dispute Resolution
+app.post('/api/admin/disputes/:id/resolve', (req, res) => {
+  const { id } = req.params;
+  const { resolutionStatus, resolutionNotes, refundAmount, arbitratedBy } = req.body;
+
+  const updated = db.updateById('disputes', id, {
+    status: resolutionStatus || 'RESOLVED_RELEASE',
+    resolutionNotes: resolutionNotes || 'Arbitrated by MSAMB Market Regulator Tribunal.',
+    arbitratedBy: arbitratedBy || 'Dr. Nitin Thorat (MSAMB)',
+    refundAmount: refundAmount || 0,
+    resolvedAt: new Date().toISOString()
+  });
+
+  if (!updated) {
+    return res.status(404).json({ error: 'Dispute not found' });
+  }
+
+  // Update associated transaction
+  if (updated.transactionId) {
+    db.updateById('transactions', updated.transactionId, {
+      dealStatus: resolutionStatus === 'RESOLVED_REFUND' ? 'REFUNDED' : 'SETTLED',
+      farmerPayoutStatus: resolutionStatus === 'RESOLVED_REFUND' ? 'ESCROW_REFUNDED' : 'PAID_TO_FARMERS'
+    });
+  }
+
+  db.insert('adminLogs', {
+    action: 'DISPUTE_ARBITRATED',
+    targetId: id,
+    performedBy: arbitratedBy || 'Dr. Nitin Thorat (MSAMB)',
+    details: { resolutionStatus, resolutionNotes, refundAmount }
+  });
+
+  res.json({ success: true, message: 'Dispute successfully arbitrated.', dispute: updated });
+});
+
+// Admin Verify User
+app.post('/api/admin/users/:id/verify', (req, res) => {
+  const { id } = req.params;
+  const { verified, trustScore } = req.body;
+
+  const user = db.updateById('users', id, {
+    verified: verified !== undefined ? verified : true,
+    trustScore: trustScore ? Number(trustScore) : 95
+  });
+
+  const fpos = db.getCollection('fpos');
+  const fpo = fpos.find(f => f.userId === id || f.id === id);
+  if (fpo) {
+    db.updateById('fpos', fpo.id, {
+      verificationStatus: verified ? 'VERIFIED_FPC' : 'REJECTED_AUDIT',
+      trustScore: trustScore ? Number(trustScore) : 95
+    });
+  }
+
+  db.insert('adminLogs', {
+    action: 'USER_KYC_STATUS_CHANGED',
+    targetId: id,
+    performedBy: 'Dr. Nitin Thorat (MSAMB)',
+    details: { verified, trustScore }
+  });
+
+  res.json({ success: true, message: 'User verification updated.', user });
 });
 
 app.get('/api/admin/logs', (req, res) => {

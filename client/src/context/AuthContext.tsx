@@ -9,8 +9,11 @@ export interface User {
   mobile: string;
   role: UserRole;
   village?: string;
+  taluka?: string;
   district?: string;
   state?: string;
+  joinedFpoId?: string;
+  joinedFpoName?: string;
   trustScore?: number;
   contactPerson?: string;
   registrationNumber?: string;
