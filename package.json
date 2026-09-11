@@ -3,9 +3,17 @@
   "version": "1.0.0",
   "description": "AGRO VISION - Smart Farming. Better Markets. Better Returns.",
   "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build",
     "dev:server": "cd server && node server.js",
     "dev:client": "cd client && npm run dev",
-    "build:client": "cd client && npm run build"
+    "build:client": "cd client && npm run build",
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
   },
   "keywords": ["agriculture", "market-intelligence", "fpo", "farmer", "pune"],
   "author": "AGRO VISION",
