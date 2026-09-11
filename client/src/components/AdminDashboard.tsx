@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { API_BASE } from '../utils/apiConfig';
 import {
   tEntity,
   tMandi,
@@ -80,10 +81,10 @@ export const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const [overviewRes, disputesRes, logsRes, healthRes] = await Promise.all([
-        fetch('http://localhost:5000/api/admin/overview').then(r => r.json()),
-        fetch('http://localhost:5000/api/admin/disputes').then(r => r.json()),
-        fetch('http://localhost:5000/api/admin/logs').then(r => r.json()),
-        fetch('http://localhost:5000/api/health').then(r => r.json())
+        fetch(`${API_BASE}/admin/overview`).then(r => r.json()),
+        fetch(`${API_BASE}/admin/disputes`).then(r => r.json()),
+        fetch(`${API_BASE}/admin/logs`).then(r => r.json()),
+        fetch(`${API_BASE}/health`).then(r => r.json())
       ]);
 
       if (overviewRes.success) setMetrics(overviewRes.metrics);
@@ -103,7 +104,7 @@ export const AdminDashboard: React.FC = () => {
 
     try {
       setActionLoading(true);
-      const res = await fetch(`http://localhost:5000/api/admin/disputes/${selectedDispute.id}/resolve`, {
+      const res = await fetch(`${API_BASE}/admin/disputes/${selectedDispute.id}/resolve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,7 +132,7 @@ export const AdminDashboard: React.FC = () => {
   const handleVerifyUser = async (targetUserId: string, verify: boolean) => {
     try {
       setActionLoading(true);
-      const res = await fetch(`http://localhost:5000/api/admin/users/${targetUserId}/verify`, {
+      const res = await fetch(`${API_BASE}/admin/users/${targetUserId}/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -157,7 +158,7 @@ export const AdminDashboard: React.FC = () => {
     if (!window.confirm(isMr ? 'तुम्हाला डेमो डेटाबेस पुन्हा रीसेट करायचा आहे का?' : 'Reset demo database to fresh Pune agricultural state?')) return;
     try {
       setActionLoading(true);
-      const res = await fetch('http://localhost:5000/api/system/reset-demo', { method: 'POST' });
+      const res = await fetch(`${API_BASE}/system/reset-demo`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setSuccessMsg(isMr ? 'डेटाबेस यशस्वीरीत्या रीसेट झाला!' : 'Database successfully reset!');

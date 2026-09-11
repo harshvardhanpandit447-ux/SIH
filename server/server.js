@@ -14,6 +14,7 @@ const {
   predictFuturePrice,
   calculateNetRealisation,
   rankMarketsForProduce,
+  rankFposForFarmerCrop,
   calculateEvidenceReputation,
   assessProduceQuality,
   calculateBuyerLotMatch
@@ -183,6 +184,35 @@ const handleQualityAssessment = (req, res) => {
 app.post('/api/ml/assess-quality', handleQualityAssessment);
 app.get('/api/ml/assess-quality', handleQualityAssessment);
 
+// 4. FPO Profit Optimizer & Multi-FPO Ranking Engine (Highest Net Profit on Top)
+const handleFpoRanking = (req, res) => {
+  const crop = req.query.crop || req.query.commodity || req.body?.crop || req.body?.commodity || 'onion';
+  const quantity = Number(req.query.quantity || req.query.qty || req.body?.quantity || req.body?.qty || 50);
+  const storageDays = Number(req.query.storageDays || req.body?.storageDays || 0);
+  const currentPrice = req.query.currentPrice || req.body?.currentPrice || null;
+  const farmerVillage = req.query.farmerVillage || req.body?.farmerVillage || 'Otur';
+  const farmerTaluka = req.query.farmerTaluka || req.body?.farmerTaluka || 'Junnar';
+  const farmerDistrict = req.query.farmerDistrict || req.body?.farmerDistrict || req.query.district || req.body?.district || 'Pune';
+  const filterDistrict = req.query.filterDistrict || req.body?.filterDistrict || null;
+
+  const fpos = db.getCollection('fpos');
+  const result = rankFposForFarmerCrop({
+    crop,
+    quantity,
+    storageDays,
+    currentPrice,
+    farmerVillage,
+    farmerTaluka,
+    farmerDistrict,
+    filterDistrict,
+    fpoList: fpos
+  });
+  res.json({ success: true, ...result });
+};
+
+app.get('/api/ml/rank-fpos', handleFpoRanking);
+app.post('/api/ml/rank-fpos', handleFpoRanking);
+
 /* ==========================================================================
    MARKET INTELLIGENCE & MANDI RATES
    ========================================================================== */
@@ -196,10 +226,99 @@ app.get('/api/fpos/list', (req, res) => {
   res.json(fpos);
 });
 
+// Detailed FPO Directory & Capability Catalog
+app.get('/api/fpos/catalog', (req, res) => {
+  const fpos = db.getCollection('fpos');
+  res.json({
+    success: true,
+    count: fpos.length,
+    fpos
+  });
+});
+
 /* ==========================================================================
-   FARMER EXPERIENCE
-   Farmers submit produce to FPO. Never directly to buyers.
+   FARMER EXPERIENCE & MULTI-CROP FPO MEMBERSHIP
+   Farmers can join multiple FPOs based on different types of crops.
    ========================================================================== */
+// Get all crop-specific memberships for a farmer
+app.get('/api/farmer/crop-memberships/:farmerId', (req, res) => {
+  const { farmerId } = req.params;
+  const allMemberships = db.getCollection('cropMemberships') || [];
+  const farmerMemberships = allMemberships.filter(m => m.farmerId === farmerId);
+  const fpos = db.getCollection('fpos');
+
+  res.json({
+    success: true,
+    farmerId,
+    memberships: farmerMemberships,
+    availableFpos: fpos
+  });
+});
+
+// Enroll or update farmer membership for a specific crop with an FPO
+app.post('/api/farmer/crop-memberships/enroll', (req, res) => {
+  const { farmerId, farmerName, crop, cropCategory, fpoId, fpoName, notes } = req.body;
+
+  if (!farmerId || !crop || !fpoId) {
+    return res.status(400).json({ error: 'Farmer ID, crop name, and FPO selection are required' });
+  }
+
+  const allMemberships = db.getCollection('cropMemberships') || [];
+  const existingIndex = allMemberships.findIndex(
+    m => m.farmerId === farmerId && m.crop.toLowerCase() === crop.toLowerCase()
+  );
+
+  let record;
+  if (existingIndex !== -1) {
+    const existingId = allMemberships[existingIndex].id;
+    record = db.updateById('cropMemberships', existingId, {
+      fpoId,
+      fpoName: fpoName || 'Designated FPC',
+      cropCategory: cropCategory || allMemberships[existingIndex].cropCategory || 'Vegetables',
+      status: 'ACTIVE',
+      notes: notes || `Enrolled for specialized ${crop} aggregation and cold-chain marketing.`,
+      updatedAt: new Date().toISOString()
+    });
+  } else {
+    record = db.insert('cropMemberships', {
+      farmerId,
+      farmerName: farmerName || 'Sopanrao Patil',
+      crop,
+      cropCategory: cropCategory || 'Vegetables',
+      fpoId,
+      fpoName: fpoName || 'Designated FPC',
+      status: 'ACTIVE',
+      enrolledDate: new Date().toISOString(),
+      notes: notes || `Enrolled for specialized ${crop} aggregation and storage.`
+    });
+  }
+
+  // Notify FPO of crop enrollment
+  db.insert('notifications', {
+    recipientId: fpoId,
+    title: 'New Farmer Crop Enrollment',
+    message: `${farmerName || 'Farmer'} enrolled their ${crop} harvest with your FPO.`,
+    type: 'CROP_MEMBERSHIP_ENROLLED'
+  });
+
+  res.json({
+    success: true,
+    message: `Successfully registered ${crop} membership with ${fpoName || 'FPO'}!`,
+    membership: record
+  });
+});
+
+// Remove / leave crop membership
+app.delete('/api/farmer/crop-memberships/:id', (req, res) => {
+  const { id } = req.params;
+  const deleted = db.deleteById('cropMemberships', id);
+  if (deleted) {
+    res.json({ success: true, message: 'Crop membership removed successfully' });
+  } else {
+    res.status(404).json({ error: 'Membership record not found' });
+  }
+});
+
 // Get farmer's produce submissions
 app.get('/api/farmer/produce/:farmerId', (req, res) => {
   const { farmerId } = req.params;
@@ -1087,11 +1206,15 @@ app.get('/api/reputation/:userId', (req, res) => {
   res.json({ success: true, userId, user: user.name, role: user.role, ...rep });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`  AGRO VISION API SERVER RUNNING ON PORT ${PORT}`);
-  console.log(`  Smart Farming. Better Markets. Better Returns.`);
-  console.log(`  Workflow: Farmer → FPO → Verified Buyer`);
-  console.log(`====================================================`);
-});
+// Start Server if run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`  AGRO VISION API SERVER RUNNING ON PORT ${PORT}`);
+    console.log(`  Smart Farming. Better Markets. Better Returns.`);
+    console.log(`  Workflow: Farmer → FPO → Verified Buyer`);
+    console.log(`====================================================`);
+  });
+}
+
+module.exports = app;

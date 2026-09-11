@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT,
   mobile TEXT,
-  role TEXT NOT NULL, -- 'FARMER', 'FPO', 'BUYER'
+  role TEXT NOT NULL, -- 'FARMER', 'FPO', 'BUYER', 'ADMIN'
   password TEXT,
   village TEXT,
   taluka TEXT,
@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS users (
   gstin TEXT,
   city TEXT,
   buyer_type TEXT,
+  department TEXT,
+  joined_fpo_id TEXT,
+  joined_fpo_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -42,14 +45,34 @@ CREATE TABLE IF NOT EXISTS fpos (
   categories JSONB DEFAULT '[]'::jsonb,
   aggregation_capacity TEXT,
   trust_score NUMERIC DEFAULT 90,
-  verification_status TEXT DEFAULT 'PENDING_DOCUMENT_AUDIT',
+  verification_status TEXT DEFAULT 'VERIFIED_FPC',
   completed_trades INTEGER DEFAULT 0,
   storage_facility TEXT,
+  fpo_fees_pct NUMERIC DEFAULT 2.0,
+  transport_rate_per_km NUMERIC DEFAULT 1.2,
+  services JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. PRODUCES TABLE (Farmer produce submissions before aggregation)
+-- 3. CROP_MEMBERSHIPS TABLE (Farmer can join multiple FPOs based on different crops)
+CREATE TABLE IF NOT EXISTS crop_memberships (
+  id TEXT PRIMARY KEY,
+  farmer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  farmer_name TEXT,
+  crop TEXT NOT NULL,
+  crop_category TEXT,
+  fpo_id TEXT NOT NULL,
+  fpo_name TEXT NOT NULL,
+  status TEXT DEFAULT 'ACTIVE', -- ACTIVE, PENDING, PAUSED
+  enrolled_date TIMESTAMPTZ DEFAULT NOW(),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(farmer_id, crop, fpo_id)
+);
+
+-- 4. PRODUCES TABLE (Farmer produce submissions before aggregation)
 CREATE TABLE IF NOT EXISTS produces (
   id TEXT PRIMARY KEY,
   farmer_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -61,20 +84,21 @@ CREATE TABLE IF NOT EXISTS produces (
   unit TEXT DEFAULT 'Quintal',
   harvest_date TEXT,
   location TEXT,
-  assigned_fpo_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  assigned_fpo_id TEXT,
   assigned_fpo_name TEXT,
   quality_grade TEXT,
   quality_confidence NUMERIC,
   ai_analysis JSONB,
   status TEXT DEFAULT 'SUBMITTED', -- SUBMITTED, UNDER_REVIEW, AGGREGATED, SOLD, PAID
   lot_id TEXT,
+  photo_url TEXT,
   submitted_at TIMESTAMPTZ DEFAULT NOW(),
   estimated_net_realisation NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. LOTS TABLE (FPO Aggregated Commercial Lots)
+-- 5. LOTS TABLE (FPO Aggregated Commercial Lots)
 CREATE TABLE IF NOT EXISTS lots (
   id TEXT PRIMARY KEY,
   lot_number TEXT UNIQUE,
@@ -98,7 +122,7 @@ CREATE TABLE IF NOT EXISTS lots (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. REQUIREMENTS TABLE (Verified Buyer purchase requirements)
+-- 6. REQUIREMENTS TABLE (Verified Buyer purchase requirements)
 CREATE TABLE IF NOT EXISTS requirements (
   id TEXT PRIMARY KEY,
   buyer_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -119,7 +143,7 @@ CREATE TABLE IF NOT EXISTS requirements (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. OFFERS TABLE (Negotiations between FPO and Buyer)
+-- 7. OFFERS TABLE (Negotiations between FPO and Buyer)
 CREATE TABLE IF NOT EXISTS offers (
   id TEXT PRIMARY KEY,
   lot_id TEXT REFERENCES lots(id) ON DELETE CASCADE,
@@ -142,7 +166,7 @@ CREATE TABLE IF NOT EXISTS offers (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. TRANSACTIONS TABLE (Finalized deals and payouts)
+-- 8. TRANSACTIONS TABLE (Finalized deals and payouts)
 CREATE TABLE IF NOT EXISTS transactions (
   id TEXT PRIMARY KEY,
   deal_number TEXT UNIQUE,
@@ -169,7 +193,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. MARKET_PRICES TABLE (APMC Mandi Rates)
+-- 9. MARKET_PRICES TABLE (APMC Mandi Rates)
 CREATE TABLE IF NOT EXISTS market_prices (
   id TEXT PRIMARY KEY,
   commodity TEXT NOT NULL,
@@ -187,7 +211,7 @@ CREATE TABLE IF NOT EXISTS market_prices (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. NOTIFICATIONS TABLE
+-- 10. NOTIFICATIONS TABLE
 CREATE TABLE IF NOT EXISTS notifications (
   id TEXT PRIMARY KEY,
   recipient_id TEXT REFERENCES users(id) ON DELETE CASCADE,
@@ -199,9 +223,21 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 11. ADMIN_LOGS TABLE
+CREATE TABLE IF NOT EXISTS admin_logs (
+  id TEXT PRIMARY KEY,
+  action TEXT NOT NULL,
+  performed_by TEXT,
+  target_id TEXT,
+  details JSONB DEFAULT '{}'::jsonb,
+  timestamp TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable RLS on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fpos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crop_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE produces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE requirements ENABLE ROW LEVEL SECURITY;
@@ -209,8 +245,9 @@ ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE market_prices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_logs ENABLE ROW LEVEL SECURITY;
 
--- Allow public read/write access policies for demo/application keys
+-- Allow public read/write access policies for application keys
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'users' AND policyname = 'Allow all access to users') THEN
@@ -218,6 +255,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'fpos' AND policyname = 'Allow all access to fpos') THEN
     CREATE POLICY "Allow all access to fpos" ON fpos FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'crop_memberships' AND policyname = 'Allow all access to crop_memberships') THEN
+    CREATE POLICY "Allow all access to crop_memberships" ON crop_memberships FOR ALL USING (true) WITH CHECK (true);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'produces' AND policyname = 'Allow all access to produces') THEN
     CREATE POLICY "Allow all access to produces" ON produces FOR ALL USING (true) WITH CHECK (true);
@@ -239,6 +279,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'notifications' AND policyname = 'Allow all access to notifications') THEN
     CREATE POLICY "Allow all access to notifications" ON notifications FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_logs' AND policyname = 'Allow all access to admin_logs') THEN
+    CREATE POLICY "Allow all access to admin_logs" ON admin_logs FOR ALL USING (true) WITH CHECK (true);
   END IF;
 END $$;
 

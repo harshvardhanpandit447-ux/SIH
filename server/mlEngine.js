@@ -877,11 +877,182 @@ function calculateBuyerLotMatch(lot, requirement) {
   };
 }
 
+/**
+ * 5. FPO Profit Optimizer & Multi-FPO Crop Comparison Engine
+ * Evaluates and ranks FPOs by Actual Net Profit to Farmer:
+ * Formula: Net Profit = FPO Gross Realisation - Transport - Storage - FPO Fees + Spoilage Savings
+ * Highest Net Realisation is suggested on top.
+ */
+function rankFposForFarmerCrop({
+  crop = 'Onion',
+  quantity = 50,
+  storageDays = 0,
+  currentPrice = null,
+  farmerVillage = 'Otur',
+  farmerTaluka = 'Junnar',
+  farmerDistrict = 'Pune',
+  filterDistrict = null,
+  fpoList = []
+}) {
+  const normCrop = (crop || 'onion').toLowerCase();
+  const profile = COMMODITY_PROFILES[normCrop] || COMMODITY_PROFILES.onion;
+  const baseSpotPrice = currentPrice && currentPrice > 0 ? Number(currentPrice) : profile.currentAvg;
+
+  let sourceFpos = fpoList && fpoList.length > 0 ? fpoList : [];
+  if (filterDistrict && filterDistrict !== 'All') {
+    const matchedByDist = sourceFpos.filter(f => (f.district || '').toLowerCase() === filterDistrict.toLowerCase());
+    if (matchedByDist.length > 0) {
+      sourceFpos = matchedByDist;
+    }
+  }
+
+  const getDistrictDistance = (fDist, targetDist, fTaluka, targetTaluka) => {
+    const fd = (fDist || 'Pune').toLowerCase();
+    const td = (targetDist || 'Pune').toLowerCase();
+    const ft = (fTaluka || '').toLowerCase();
+    const tt = (targetTaluka || '').toLowerCase();
+
+    if (fd === td) {
+      if (ft && tt && (ft === tt || ft.includes(tt) || tt.includes(ft))) return 12;
+      return 35; // same district average
+    }
+
+    // Inter-district matrix
+    if ((fd.includes('pune') && td.includes('ahmednagar')) || (fd.includes('ahmednagar') && td.includes('pune'))) return 90;
+    if ((fd.includes('pune') && td.includes('satara')) || (fd.includes('satara') && td.includes('pune'))) return 105;
+    if ((fd.includes('pune') && td.includes('nashik')) || (fd.includes('nashik') && td.includes('pune'))) return 160;
+    if ((fd.includes('pune') && td.includes('solapur')) || (fd.includes('solapur') && td.includes('pune'))) return 220;
+    if ((fd.includes('pune') && td.includes('kolhapur')) || (fd.includes('kolhapur') && td.includes('pune'))) return 230;
+    if ((fd.includes('pune') && td.includes('sangli')) || (fd.includes('sangli') && td.includes('pune'))) return 210;
+    if ((fd.includes('pune') && td.includes('jalgaon')) || (fd.includes('jalgaon') && td.includes('pune'))) return 360;
+    if ((fd.includes('pune') && td.includes('sambhaji')) || (fd.includes('sambhaji') && td.includes('pune'))) return 230;
+    if ((fd.includes('pune') && td.includes('latur')) || (fd.includes('latur') && td.includes('pune'))) return 330;
+    if ((fd.includes('pune') && td.includes('nagpur')) || (fd.includes('nagpur') && td.includes('pune'))) return 580;
+
+    return 150; // default inter-district
+  };
+
+  const qty = Number(quantity) || 50;
+  const apmcDeductionPerQtl = Math.round(baseSpotPrice * 0.08) + 60;
+  const apmcNetPerQtl = Math.max(0, baseSpotPrice - apmcDeductionPerQtl);
+  const apmcTotalNet = apmcNetPerQtl * qty;
+
+  const evaluated = sourceFpos.map(fpo => {
+    const distanceKm = getDistrictDistance(farmerDistrict, fpo.district, farmerTaluka, fpo.taluka);
+    const supportedList = Array.isArray(fpo.products) ? fpo.products : ['Onion', 'Tomato', 'Vegetables'];
+    const supportsCrop = supportedList.some(p => p.toLowerCase().includes(normCrop) || normCrop.includes(p.toLowerCase()));
+
+    const fpoPriceLiftPct = supportsCrop ? 0.12 : 0.05;
+    const fpoGrossPrice = Math.round(baseSpotPrice * (1 + fpoPriceLiftPct));
+    const grossTotal = fpoGrossPrice * qty;
+
+    const transportRate = fpo.transportRatePerKm || 1.15;
+    const transportCostPerQtl = Math.round(distanceKm * transportRate + 12);
+    const totalTransportCost = transportCostPerQtl * qty;
+
+    const monthlyRate = profile.storageCostPerQuintalMonth || 40;
+    const storageCostPerQtl = Math.round((monthlyRate / 30) * (storageDays || 0));
+    const totalStorageCost = storageCostPerQtl * qty;
+
+    const fpoFeePct = fpo.fpoFeesPct || 2.0;
+    const fpoFeePerQtl = Math.round((fpoGrossPrice * fpoFeePct) / 100);
+    const totalFpoFee = fpoFeePerQtl * qty;
+
+    const standardSpoilageRate = (profile.expectedSpoilageRateMonthly / 30) * Math.max(1, storageDays || 1);
+    const fpoSpoilageProtectionPct = supportsCrop ? 0.65 : 0.30;
+    const spoilageSavingsPerQtl = Math.round(baseSpotPrice * standardSpoilageRate * fpoSpoilageProtectionPct);
+    const totalSpoilageSavings = spoilageSavingsPerQtl * qty;
+
+    const totalDeductionsPerQtl = transportCostPerQtl + storageCostPerQtl + fpoFeePerQtl;
+    const totalDeductions = totalTransportCost + totalStorageCost + totalFpoFee;
+
+    const netRealisationPerQtl = Math.max(0, (fpoGrossPrice - totalDeductionsPerQtl) + spoilageSavingsPerQtl);
+    const totalNetRealisation = netRealisationPerQtl * qty;
+
+    const extraProfitTotal = totalNetRealisation - apmcTotalNet;
+    const extraProfitPerQtl = netRealisationPerQtl - apmcNetPerQtl;
+    const extraProfitPct = apmcTotalNet > 0 ? Number(((extraProfitTotal / apmcTotalNet) * 100).toFixed(1)) : 0;
+
+    return {
+      fpoId: fpo.id,
+      userId: fpo.userId || fpo.id,
+      name: fpo.name,
+      hubLocation: fpo.hubLocation || fpo.warehouseLocation || 'Hub',
+      taluka: fpo.taluka || '',
+      district: fpo.district || 'Pune',
+      trustScore: fpo.trustScore || 90,
+      supportsCrop,
+      supportedProducts: supportedList,
+      storageFacility: fpo.storageFacility || 'Standard Storage Hub',
+      storageType: fpo.storageType || (fpo.storageFacility ? fpo.storageFacility.split('&')[0].trim() : 'Storage Hub'),
+      services: fpo.services || ['Aggregation', 'Cold Chain', 'Grading', 'Direct Buyer Matching'],
+      distanceKm,
+      pricing: {
+        baseSpotPrice,
+        fpoGrossPrice,
+        grossTotal,
+        transportCostPerQtl,
+        totalTransportCost,
+        storageCostPerQtl,
+        totalStorageCost,
+        fpoFeePct,
+        fpoFeePerQtl,
+        totalFpoFee,
+        spoilageSavingsPerQtl,
+        totalSpoilageSavings,
+        totalDeductionsPerQtl,
+        totalDeductions,
+        netRealisationPerQtl,
+        totalNetRealisation,
+        apmcBenchmarkNetPerQtl: apmcNetPerQtl,
+        apmcBenchmarkTotalNet: apmcTotalNet,
+        extraProfitPerQtl,
+        extraProfitTotal,
+        extraProfitPct: isNaN(extraProfitPct) ? 0 : extraProfitPct
+      }
+    };
+  });
+
+  evaluated.sort((a, b) => b.pricing.totalNetRealisation - a.pricing.totalNetRealisation);
+
+  evaluated.forEach((item, idx) => {
+    item.rank = idx + 1;
+    item.isTopRecommendation = idx === 0;
+    if (idx === 0) {
+      item.recommendationReason = {
+        en: `🌟 Highest Net Return in ${item.district}: Gives ₹${item.pricing.totalNetRealisation.toLocaleString('en-IN')} (+₹${item.pricing.extraProfitTotal.toLocaleString('en-IN')} vs APMC Mandi) with ${item.distanceKm} km transport and specialized ${item.storageType}.`,
+        mr: `🌟 ${item.district} जिल्ह्यात सर्वाधिक निव्वळ नफा: ₹${item.pricing.totalNetRealisation.toLocaleString('en-IN')} (बाजार समितीपेक्षा +₹${item.pricing.extraProfitTotal.toLocaleString('en-IN')} जादा) आणि जवळचे अंतर (${item.distanceKm} किमी).`
+      };
+    }
+  });
+
+  return {
+    crop: profile.shortName,
+    cropKey: normCrop,
+    quantity: qty,
+    unit: 'Quintal',
+    storageDays: storageDays || 0,
+    farmerLocation: {
+      village: farmerVillage,
+      taluka: farmerTaluka,
+      district: farmerDistrict
+    },
+    selectedDistrict: filterDistrict || farmerDistrict,
+    apmcBenchmark: {
+      netPerQtl: apmcNetPerQtl,
+      totalNet: apmcTotalNet
+    },
+    topFpo: evaluated[0],
+    rankedFpos: evaluated
+  };
+}
+
 module.exports = {
   COMMODITY_PROFILES,
   predictFuturePrice,
   calculateNetRealisation,
   rankMarketsForProduce,
+  rankFposForFarmerCrop,
   calculateEvidenceReputation,
   assessProduceQuality,
   calculateBuyerLotMatch

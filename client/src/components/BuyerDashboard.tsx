@@ -5,6 +5,7 @@ import {
   tEntity,
   tMandi
 } from '../utils/translationHelper';
+import { API_BASE } from '../utils/apiConfig';
 import {
   ShoppingCart,
   PlusCircle,
@@ -47,8 +48,6 @@ export const BuyerDashboard: React.FC = () => {
   const [disputeCategory, setDisputeCategory] = useState('QUALITY_MISMATCH');
   const [disputeClaimAmount, setDisputeClaimAmount] = useState(6000);
   const [filingDispute, setFilingDispute] = useState(false);
-
-  const API_BASE = 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchBuyerData();

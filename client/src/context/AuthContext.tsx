@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE } from '../utils/apiConfig';
 
 export type UserRole = 'FARMER' | 'FPO' | 'BUYER' | 'ADMIN';
+
+export interface CropMembership {
+  id: string;
+  farmerId: string;
+  farmerName?: string;
+  crop: string;
+  cropCategory?: string;
+  fpoId: string;
+  fpoName: string;
+  status: 'ACTIVE' | 'PENDING' | 'PAUSED';
+  enrolledDate?: string;
+  notes?: string;
+}
 
 export interface User {
   id: string;
@@ -14,6 +28,7 @@ export interface User {
   state?: string;
   joinedFpoId?: string;
   joinedFpoName?: string;
+  cropMemberships?: CropMembership[];
   trustScore?: number;
   contactPerson?: string;
   registrationNumber?: string;
@@ -28,11 +43,10 @@ interface AuthContextType {
   register: (data: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   quickDemoLogin: (role: UserRole) => Promise<void>;
+  updateUser: (updatedUser: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const API_BASE = 'http://localhost:5000/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -98,6 +112,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (updatedUser: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updatedUser } : null);
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -128,7 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
-        quickDemoLogin
+        quickDemoLogin,
+        updateUser
       }}
     >
       {children}

@@ -464,6 +464,44 @@
       "status": "ACTIVE",
       "createdAt": "2026-09-09T17:00:45.3+00:00",
       "updatedAt": "2026-09-09T17:00:45.360402+00:00"
+    },
+    {
+      "id": "requ_1789146740989_138",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "buyerContact": "Rajesh Mehta",
+      "buyerTrustScore": 92,
+      "commodity": "Onion",
+      "category": "Vegetables",
+      "quantity": 100,
+      "unit": "Quintal",
+      "requiredGrade": "Grade A",
+      "deliveryLocation": "Pune Market Yard, Gultekdi",
+      "neededByDate": "2026-03-20",
+      "targetPricePerQuintal": 2800,
+      "maxPricePerQuintal": 2900,
+      "status": "ACTIVE",
+      "createdAt": "2026-09-11T17:12:20.989+00:00",
+      "updatedAt": "2026-09-11T17:12:21.345047+00:00"
+    },
+    {
+      "id": "requ_1789146758341_117",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "buyerContact": "Rajesh Mehta",
+      "buyerTrustScore": 92,
+      "commodity": "Onion",
+      "category": "Vegetables",
+      "quantity": 190,
+      "unit": "Quintal",
+      "requiredGrade": "Grade A",
+      "deliveryLocation": "Pune Market Yard, Gultekdi",
+      "neededByDate": "2026-03-20",
+      "targetPricePerQuintal": 2850,
+      "maxPricePerQuintal": 2900,
+      "status": "ACTIVE",
+      "createdAt": "2026-09-11T17:12:38.341+00:00",
+      "updatedAt": "2026-09-11T17:12:38.413361+00:00"
     }
   ],
   "offers": [
@@ -832,6 +870,22 @@
       "reason": "Wants to access the 500 MT ventilated onion chawl storage at Narayangaon Hub for summer rabi crop.",
       "status": "PENDING",
       "requestedAt": "2026-03-04T11:20:00.000Z"
+    }
+  ],
+  "cropMemberships": [
+    {
+      "id": "crop_1789142910680_6",
+      "createdAt": "2026-09-11T16:08:30.680Z",
+      "farmerId": "usr_farmer_01",
+      "farmerName": "Sopanrao Patil",
+      "crop": "Pomegranate",
+      "cropCategory": "Fruits",
+      "fpoId": "fpo_04",
+      "fpoName": "Sahasradhara Grapes & Pomegranate FPC",
+      "status": "ACTIVE",
+      "enrolledDate": "2026-09-11T16:08:30.680Z",
+      "notes": "Controlled atmosphere cold storage enrollment",
+      "updatedAt": "2026-09-11T17:06:36.233Z"
     }
   ]
 }

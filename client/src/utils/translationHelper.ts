@@ -180,11 +180,21 @@ const MANDI_DICTIONARY: Record<string, string> = {
   'Haveli': 'हवेली',
   'Saswad': 'सासवड',
 
-  // Hubs & Villages
+  // Hubs, Villages & Maharashtra Districts
+  'Pune': 'पुणे',
+  'Nashik': 'नाशिक',
+  'Ahmednagar': 'अहमदनगर',
+  'Solapur': 'सोलापूर',
+  'Satara': 'सातारा',
+  'Kolhapur': 'कोल्हापूर',
+  'Sangli': 'सांगली',
+  'Jalgaon': 'जळगाव',
+  'Chhatrapati Sambhaji Nagar': 'छत्रपती संभाजीनगर',
+  'Latur': 'लातूर',
+  'Nagpur': 'नागपूर',
   'Otur, Junnar, Pune': 'ओतूर, जुन्नर, पुणे',
   'Otur': 'ओतूर',
   'Junnar': 'जुन्नर',
-  'Pune': 'पुणे',
   'Maharashtra': 'महाराष्ट्र',
   'Narayangaon Hub, Pune-Nashik Highway': 'नारायणगाव केंद्र, पुणे-नाशिक महामार्ग',
   'Narayangaon, Junnar': 'नारायणगाव, जुन्नर',
@@ -272,6 +282,16 @@ export function tMandi(location?: string | null, language: Language = 'en'): str
   if (!location) return '';
   if (language !== 'mr') return location;
   return MANDI_DICTIONARY[location] || MANDI_DICTIONARY[location.trim()] || location;
+}
+
+/**
+ * Translates Maharashtra district names
+ */
+export function tDistrict(district?: string | null, language: Language = 'en'): string {
+  if (!district) return '';
+  if (district === 'All' || district === 'All Districts') return language === 'mr' ? 'सर्व जिल्हे' : 'All Districts';
+  if (language !== 'mr') return district;
+  return MANDI_DICTIONARY[district] || MANDI_DICTIONARY[district.trim()] || district;
 }
 
 /**

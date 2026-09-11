@@ -19,6 +19,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 const TABLE_MAP = {
   users: 'users',
   fpos: 'fpos',
+  cropMemberships: 'crop_memberships',
   produces: 'produces',
   lots: 'lots',
   requirements: 'requirements',
@@ -44,7 +45,6 @@ function objectToSnake(obj) {
   const newObj = {};
   for (const [key, value] of Object.entries(obj)) {
     const snakeKey = toSnakeCase(key);
-    // Don't convert inner objects of JSONB fields if they are domain data (keep as is)
     newObj[snakeKey] = value;
   }
   return newObj;
@@ -96,12 +96,10 @@ async function syncRecord(collection, item) {
       .upsert(row, { onConflict: 'id' });
 
     if (error) {
-      console.error(`[Supabase] Error upserting into ${tableName}:`, error.message);
-    } else {
-      // console.log(`[Supabase] Synced ${tableName} record: ${item.id}`);
+      console.warn(`[Supabase] Error upserting into ${tableName}:`, error.message);
     }
   } catch (err) {
-    console.error(`[Supabase] Network/Sync exception on ${tableName}:`, err.message);
+    console.warn(`[Supabase] Network/Sync exception on ${tableName}:`, err.message);
   }
 }
 
@@ -119,10 +117,10 @@ async function deleteRecord(collection, id) {
       .eq('id', id);
 
     if (error) {
-      console.error(`[Supabase] Error deleting from ${tableName}:`, error.message);
+      console.warn(`[Supabase] Error deleting from ${tableName}:`, error.message);
     }
   } catch (err) {
-    console.error(`[Supabase] Network/Sync exception deleting from ${tableName}:`, err.message);
+    console.warn(`[Supabase] Network/Sync exception deleting from ${tableName}:`, err.message);
   }
 }
 
@@ -140,7 +138,7 @@ async function resetSupabaseTables(seedDb) {
         await supabase.from(tableName).upsert(rows);
       }
     } catch (err) {
-      console.error(`[Supabase] Error resetting ${tableName}:`, err.message);
+      console.warn(`[Supabase] Error resetting ${tableName}:`, err.message);
     }
   }
   console.log('[Supabase] Reset completed successfully.');

@@ -8,6 +8,7 @@ import {
   tStatus,
   tGrade
 } from '../utils/translationHelper';
+import { API_BASE } from '../utils/apiConfig';
 import {
   Package,
   Layers,
@@ -40,8 +41,6 @@ export const FPODashboard: React.FC = () => {
   const [expectedPrice, setExpectedPrice] = useState(2850);
   const [minPrice, setMinPrice] = useState(2750);
   const [pickupHub, setPickupHub] = useState('Narayangaon FPO Aggregation Center, Pune');
-
-  const API_BASE = 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchFpoData();
