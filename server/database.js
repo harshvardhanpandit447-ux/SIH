@@ -1,0 +1,1188 @@
+/**
+ * AGRO VISION - Database Store & Seed Data Service
+ * Document-oriented persistent JSON store supporting Users, Profiles, Produce,
+ * Lots, Requirements, Market Rates, Offers, Transactions and Notifications.
+ */
+
+const fs = require('fs');
+const path = require('path');
+const supabaseBridge = require('./supabase');
+
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_DIR, 'agrovision_db.json');
+
+// Ensure data directory exists (wrapped for serverless read-only environments)
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Read-only filesystem in serverless runtime (e.g. Vercel)
+}
+
+// Initial Seed Data for Pune Agriculture Ecosystem
+const INITIAL_DB = {
+  users: [
+    {
+      id: 'usr_farmer_01',
+      name: 'Sopanrao Patil',
+      email: 'farmer@agrovision.in',
+      mobile: '9822012345',
+      role: 'FARMER',
+      password: 'farmer123',
+      village: 'Otur',
+      taluka: 'Junnar',
+      district: 'Pune',
+      state: 'Maharashtra',
+      joinedFpoId: 'usr_fpo_01',
+      joinedFpoName: 'Shivneri Agri Farmers Producer Co.',
+      createdAt: '2026-01-15T10:00:00.000Z'
+    },
+    {
+      id: 'usr_fpo_01',
+      name: 'Shivneri Agri Farmers Producer Co.',
+      contactPerson: 'Sachin Darekar (CEO)',
+      email: 'fpo@agrovision.in',
+      mobile: '9850123456',
+      role: 'FPO',
+      password: 'fpo123',
+      registrationNumber: 'U01409PN2018PTC178942',
+      taluka: 'Junnar',
+      district: 'Pune',
+      state: 'Maharashtra',
+      trustScore: 94,
+      aggregationCapacity: '500 Quintals/week',
+      warehouseLocation: 'Narayangaon Hub, Pune-Nashik Highway',
+      verified: true,
+      createdAt: '2026-01-10T10:00:00.000Z'
+    },
+    {
+      id: 'usr_buyer_01',
+      name: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      contactPerson: 'Rajesh Mehta',
+      email: 'buyer@agrovision.in',
+      mobile: '9890123456',
+      role: 'BUYER',
+      password: 'buyer123',
+      gstin: '27AABCS1429B1Z8',
+      city: 'Pune',
+      state: 'Maharashtra',
+      buyerType: 'Institutional Wholesaler & Supermarket Supplier',
+      trustScore: 92,
+      createdAt: '2026-01-12T10:00:00.000Z'
+    },
+    {
+      id: 'usr_admin_01',
+      name: 'Maharashtra Agri Marketing Board (MSAMB)',
+      contactPerson: 'Dr. Nitin Thorat (Director of Marketing)',
+      email: 'admin@agrovision.in',
+      mobile: '9820011223',
+      role: 'ADMIN',
+      password: 'admin123',
+      district: 'Pune',
+      state: 'Maharashtra',
+      department: 'State Agricultural Marketing & Dispute Resolution Cell',
+      trustScore: 100,
+      createdAt: '2026-01-01T10:00:00.000Z'
+    }
+  ],
+
+  fpos: [
+    // --- PUNE DISTRICT ---
+    {
+      id: 'fpo_01',
+      userId: 'usr_fpo_01',
+      name: 'Shivneri Agri Farmers Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Junnar',
+      hubLocation: 'Narayangaon, Junnar',
+      products: ['Onion', 'Tomato', 'Grapes', 'Vegetables'],
+      categories: ['Vegetables', 'Fruits'],
+      aggregationCapacity: '500 Quintals/week',
+      trustScore: 94,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 128,
+      storageFacility: '500 MT Ventilated Onion Chawl & Cold Hub',
+      storageType: 'Ventilated Onion Chawl & Cold Hub',
+      fpoFeesPct: 2.0,
+      transportRatePerKm: 1.1,
+      services: ['Ventilated Onion Chawl', 'Cold Storage (2-4°C)', 'Computerized Sorting & Grading', 'Direct Supermarket Tie-ups', 'Fast Escrow Payouts', 'Logistics Freight Fleet']
+    },
+    {
+      id: 'fpo_02',
+      userId: 'usr_fpo_02',
+      name: 'Junnar Taluka Farmers Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Junnar',
+      hubLocation: 'Otur, Junnar',
+      products: ['Tomato', 'Pomegranate', 'Cabbage', 'Cauliflower'],
+      categories: ['Vegetables', 'Fruits'],
+      aggregationCapacity: '350 Quintals/week',
+      trustScore: 91,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 86,
+      storageFacility: '200 MT Pre-cooling Center',
+      storageType: 'Pre-cooling & Crate Hub',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.0,
+      services: ['Pre-cooling Units', 'Reusable Plastic Crate Supply', 'Ethylene Control Ripening', 'Direct Mumbai/Vashi Wholesale Dispatch', 'Quality Lab Testing']
+    },
+    {
+      id: 'fpo_03',
+      userId: 'usr_fpo_03',
+      name: 'Baramati Farmers Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Baramati',
+      hubLocation: 'Baramati MIDC',
+      products: ['Soybean', 'Sugarcane', 'Grapes', 'Pomegranate'],
+      categories: ['Fruits', 'Field Crops', 'Commercial'],
+      aggregationCapacity: '1,000 Quintals/week',
+      trustScore: 96,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 210,
+      storageFacility: '1,000 MT Multi-commodity Cold Storage & Grain Silo',
+      storageType: 'Multi-commodity Cold Store & Grain Silo',
+      fpoFeesPct: 1.5,
+      transportRatePerKm: 1.2,
+      services: ['Dry Grain Silo Storage', 'Cold Storage (0-1°C)', 'Moisture & Oil Content Testing', 'Solvent Extractors Crushing Agreement', 'Export Packaging Lines']
+    },
+    {
+      id: 'fpo_04',
+      userId: 'usr_fpo_04',
+      name: 'Indapur Agro Farmers Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Indapur',
+      hubLocation: 'Indapur Hub, Solapur Highway',
+      products: ['Grapes', 'Pomegranate', 'Guava', 'Tomato'],
+      categories: ['Fruits', 'Vegetables'],
+      aggregationCapacity: '450 Quintals/week',
+      trustScore: 93,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 115,
+      storageFacility: '450 MT Controlled Atmosphere Cold Storage',
+      storageType: 'Atmosphere Cold Storage (0-2°C)',
+      fpoFeesPct: 2.2,
+      transportRatePerKm: 1.3,
+      services: ['Ultra Low Oxygen Cold Store', 'Chemical Residue Testing', 'Export Palletizing & Pre-cooling', 'Gulf & European Port Clearance']
+    },
+    {
+      id: 'fpo_05',
+      userId: 'usr_fpo_05',
+      name: 'Hutatma Rajguru Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Khed',
+      hubLocation: 'Shelpimpalgaon, Chakan Corridor',
+      products: ['Onion', 'Cabbage', 'Soybean', 'Potato', 'Vegetables'],
+      categories: ['Vegetables', 'Field Crops'],
+      aggregationCapacity: '500 Quintals/week',
+      trustScore: 90,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 78,
+      storageFacility: '500 MT Highway Transit Warehouse',
+      storageType: 'Multi-commodity Sorting Shed',
+      fpoFeesPct: 1.9,
+      transportRatePerKm: 1.15,
+      services: ['Daily Sorting Conveyors', 'Express Transport to Pune/Mumbai Retailers', 'Cold Van Dispatch']
+    },
+    {
+      id: 'fpo_06',
+      userId: 'usr_fpo_06',
+      name: 'Narayangadh Agro Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Junnar',
+      hubLocation: 'Khodad, Junnar',
+      products: ['Onion', 'Garlic', 'Tomato', 'Vegetables'],
+      categories: ['Vegetables'],
+      aggregationCapacity: '350 Quintals/week',
+      trustScore: 92,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 64,
+      storageFacility: '350 MT Solar Ventilated Onion Chawl',
+      storageType: 'Solar Ventilated Chawl',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.05,
+      services: ['Solar Ventilated Chawl', 'Garlic Curing Line', 'Direct APMC Mandi Link']
+    },
+    {
+      id: 'fpo_07',
+      userId: 'usr_fpo_07',
+      name: 'Shree Satwajibaba Agro Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Khed',
+      hubLocation: 'Wafgaon, Khed',
+      products: ['Onion', 'Potato', 'Groundnut', 'Soybean'],
+      categories: ['Vegetables', 'Field Crops'],
+      aggregationCapacity: '400 Quintals/week',
+      trustScore: 89,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 58,
+      storageFacility: '400 MT Mechanized Sorting & Grading Shed',
+      storageType: 'Mechanized Sorting Shed',
+      fpoFeesPct: 1.9,
+      transportRatePerKm: 1.1,
+      services: ['Mechanized Potato Sorting', 'Groundnut Pod Cleaning', 'Bulk Trucking']
+    },
+    {
+      id: 'fpo_08',
+      userId: 'usr_fpo_08',
+      name: 'Bhima-Ghod Kisan Utpadit Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Shirur',
+      hubLocation: 'Inamgaon, Shirur',
+      products: ['Sugarcane', 'Soybean', 'Gram', 'Onion'],
+      categories: ['Commercial', 'Field Crops'],
+      aggregationCapacity: '600 Quintals/week',
+      trustScore: 91,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 82,
+      storageFacility: '600 MT Dry Warehouse & Silo',
+      storageType: 'Dry Grain Silo',
+      fpoFeesPct: 1.6,
+      transportRatePerKm: 1.2,
+      services: ['Grain Silo', 'Sugar Mill Direct Link', 'Soybean Collective Aggregation']
+    },
+    {
+      id: 'fpo_09',
+      userId: 'usr_fpo_09',
+      name: 'Mauli Krupa Agro Producer Co. Ltd.',
+      district: 'Pune',
+      taluka: 'Ambegaon',
+      hubLocation: 'Ghodegaon, Ambegaon',
+      products: ['Potato', 'Tomato', 'Ginger', 'Paddy'],
+      categories: ['Vegetables', 'Field Crops'],
+      aggregationCapacity: '300 Quintals/week',
+      trustScore: 90,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 52,
+      storageFacility: '300 MT Hill-Cluster Aggregation Shed',
+      storageType: 'Hill-Cluster Storage Shed',
+      fpoFeesPct: 1.7,
+      transportRatePerKm: 1.1,
+      services: ['Ginger Washing Line', 'Hill-Slope Tomato Crating', 'Direct Pune APMC Dispatch']
+    },
+
+    // --- NASHIK DISTRICT ---
+    {
+      id: 'fpo_nsk_01',
+      userId: 'usr_fpo_nsk_01',
+      name: 'Sahyadri Farmers Producer Co. Ltd. (Sahyadri Farms)',
+      district: 'Nashik',
+      taluka: 'Dindori',
+      hubLocation: 'Mohadi, Dindori, Nashik',
+      products: ['Grapes', 'Tomato', 'Pomegranate', 'Onion', 'Vegetables'],
+      categories: ['Fruits', 'Vegetables'],
+      aggregationCapacity: '10,000 Quintals/week',
+      trustScore: 99,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 850,
+      storageFacility: '10,000 MT Integrated Cold Chain & Aseptic Processing Unit',
+      storageType: 'World-Class Cold Chain & Packhouse',
+      fpoFeesPct: 2.0,
+      transportRatePerKm: 1.2,
+      services: ['Global GAP Certified Packhouse', 'Individual Quick Freezing (IQF)', 'Residue-Free Testing Lab', 'Export to 42 Countries', 'Direct Retail Distribution']
+    },
+    {
+      id: 'fpo_nsk_02',
+      userId: 'usr_fpo_nsk_02',
+      name: 'Lasalgaon Onion Growers Farmer Producer Co. Ltd.',
+      district: 'Nashik',
+      taluka: 'Niphad',
+      hubLocation: 'Lasalgaon, Niphad, Nashik',
+      products: ['Onion', 'Maize', 'Soybean'],
+      categories: ['Vegetables', 'Field Crops'],
+      aggregationCapacity: '1,500 Quintals/week',
+      trustScore: 97,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 420,
+      storageFacility: '1,500 MT Modern Ventilated Onion Chawl',
+      storageType: 'Automated Ventilated Chawl',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.1,
+      services: ['Asia Biggest Onion Market Direct Arbitrage', 'Dehydration Slicing Link', 'Moisture Proof Transit Fleet', 'Escrow Bank Guarantee']
+    },
+    {
+      id: 'fpo_nsk_03',
+      userId: 'usr_fpo_nsk_03',
+      name: 'Kisan Veer Agro Producer Co. Ltd.',
+      district: 'Nashik',
+      taluka: 'Niphad',
+      hubLocation: 'Pimpalgaon Baswant, Nashik',
+      products: ['Tomato', 'Grapes', 'Onion', 'Capsicum'],
+      categories: ['Vegetables', 'Fruits'],
+      aggregationCapacity: '800 Quintals/week',
+      trustScore: 94,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 190,
+      storageFacility: '800 MT Pre-cooling & Grading Station',
+      storageType: 'Pre-cooling & Grading Center',
+      fpoFeesPct: 1.9,
+      transportRatePerKm: 1.15,
+      services: ['Tomato Sizing Conveyor', 'Grape Pouch Packing', 'Direct North India Wholesale Link']
+    },
+
+    // --- AHMEDNAGAR DISTRICT ---
+    {
+      id: 'fpo_ah_01',
+      userId: 'usr_fpo_ah_01',
+      name: 'Sangamner Taluka Dudh & Krishi Producer Co. Ltd.',
+      district: 'Ahmednagar',
+      taluka: 'Sangamner',
+      hubLocation: 'Sangamner Hub, Pune-Nashik Corridor',
+      products: ['Tomato', 'Onion', 'Pomegranate', 'Dairy'],
+      categories: ['Vegetables', 'Fruits'],
+      aggregationCapacity: '600 Quintals/week',
+      trustScore: 95,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 165,
+      storageFacility: '600 MT Cold Storage & Milk Chilling Hub',
+      storageType: 'Cold Storage (2-4°C)',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.1,
+      services: ['Cold Storage', 'High-Density Tomato Grading', 'Integrated Farmer Payment Settlement']
+    },
+    {
+      id: 'fpo_ah_02',
+      userId: 'usr_fpo_ah_02',
+      name: 'Godavari Valley Farmers Producer Co. Ltd.',
+      district: 'Ahmednagar',
+      taluka: 'Kopargaon',
+      hubLocation: 'Kopargaon MIDC, Ahmednagar',
+      products: ['Sugarcane', 'Onion', 'Guava', 'Sweet Lime'],
+      categories: ['Commercial', 'Fruits', 'Vegetables'],
+      aggregationCapacity: '750 Quintals/week',
+      trustScore: 93,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 130,
+      storageFacility: '750 MT Multi-commodity Transit Warehouse',
+      storageType: 'Multi-commodity Warehouse',
+      fpoFeesPct: 1.7,
+      transportRatePerKm: 1.15,
+      services: ['Guava Ripening Chambers', 'Onion Storage', 'Direct Institutional Offtake']
+    },
+
+    // --- SOLAPUR DISTRICT ---
+    {
+      id: 'fpo_sol_01',
+      userId: 'usr_fpo_sol_01',
+      name: 'Bhima Pomegranate & Agri Farmers Producer Co. Ltd.',
+      district: 'Solapur',
+      taluka: 'Pandharpur',
+      hubLocation: 'Pandharpur, Solapur',
+      products: ['Pomegranate', 'Grapes', 'Sugarcane', 'Jowar'],
+      categories: ['Fruits', 'Commercial', 'Field Crops'],
+      aggregationCapacity: '800 Quintals/week',
+      trustScore: 96,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 240,
+      storageFacility: '800 MT Controlled Atmosphere Cold Storage',
+      storageType: 'Atmosphere Cold Storage (0-2°C)',
+      fpoFeesPct: 2.1,
+      transportRatePerKm: 1.25,
+      services: ['Bhagwa Pomegranate Export Certification', 'Aril Extraction Packhouse', 'Pre-cooling & Waxing Line']
+    },
+    {
+      id: 'fpo_sol_02',
+      userId: 'usr_fpo_sol_02',
+      name: 'Sangola Taluka Pomegranate Growers FPC',
+      district: 'Solapur',
+      taluka: 'Sangola',
+      hubLocation: 'Sangola Export Hub, Solapur',
+      products: ['Pomegranate', 'Ber', 'Jowar', 'Maize'],
+      categories: ['Fruits', 'Field Crops'],
+      aggregationCapacity: '600 Quintals/week',
+      trustScore: 95,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 180,
+      storageFacility: '600 MT Waxing, Grading & Export Packhouse',
+      storageType: 'Waxing & Grading Packhouse',
+      fpoFeesPct: 2.0,
+      transportRatePerKm: 1.2,
+      services: ['Automatic Sizing & Color Sorter', 'Individual Shrink Wrapping', 'Direct Gulf Container Loading']
+    },
+
+    // --- SATARA DISTRICT ---
+    {
+      id: 'fpo_sat_01',
+      userId: 'usr_fpo_sat_01',
+      name: 'Mahabaleshwar Strawberry & Fruit Growers FPC',
+      district: 'Satara',
+      taluka: 'Wai',
+      hubLocation: 'Wai / Mahabaleshwar Foothills, Satara',
+      products: ['Strawberry', 'Raspberry', 'Exotic Vegetables', 'Ginger'],
+      categories: ['Fruits', 'Vegetables'],
+      aggregationCapacity: '300 Quintals/week',
+      trustScore: 96,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 145,
+      storageFacility: '300 MT Blast Freezing & Cold Room',
+      storageType: 'Blast Freezing & Cold Store (-2°C to 4°C)',
+      fpoFeesPct: 2.5,
+      transportRatePerKm: 1.35,
+      services: ['Clamshell Punnet Packing', 'Reefer Van Cold Transit to Mumbai/Pune', 'Jam/Crush Processor Direct Contracts']
+    },
+    {
+      id: 'fpo_sat_02',
+      userId: 'usr_fpo_sat_02',
+      name: 'Krishna Valley Agro Producer Co. Ltd.',
+      district: 'Satara',
+      taluka: 'Karad',
+      hubLocation: 'Karad MIDC, Satara',
+      products: ['Sugarcane', 'Turmeric', 'Ginger', 'Soybean'],
+      categories: ['Commercial', 'Field Crops'],
+      aggregationCapacity: '700 Quintals/week',
+      trustScore: 94,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 175,
+      storageFacility: '700 MT Steam Boiling & Turmeric Processing Center',
+      storageType: 'Turmeric Processing & Grain Silo',
+      fpoFeesPct: 1.6,
+      transportRatePerKm: 1.15,
+      services: ['Turmeric Steam Polishing', 'Ginger Washing Line', 'Bulk Sugar Mill Offtake']
+    },
+
+    // --- KOLHAPUR DISTRICT ---
+    {
+      id: 'fpo_kol_01',
+      userId: 'usr_fpo_kol_01',
+      name: 'Panchganga Agro Farmers Producer Co. Ltd.',
+      district: 'Kolhapur',
+      taluka: 'Shirol',
+      hubLocation: 'Jaysingpur / Shirol, Kolhapur',
+      products: ['Sugarcane', 'Jaggery', 'Vegetables', 'Turmeric'],
+      categories: ['Commercial', 'Vegetables'],
+      aggregationCapacity: '800 Quintals/week',
+      trustScore: 95,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 220,
+      storageFacility: '800 MT Modern Hygienic Jaggery & Cold Store',
+      storageType: 'Jaggery Plant & Cold Store',
+      fpoFeesPct: 1.7,
+      transportRatePerKm: 1.2,
+      services: ['Organic Jaggery Cube Line', 'Vegetable Transit Logistics', 'Direct Bangalore/Goa Supply Link']
+    },
+
+    // --- SANGLI DISTRICT ---
+    {
+      id: 'fpo_san_01',
+      userId: 'usr_fpo_san_01',
+      name: 'Tasgaon Raisin & Grape Growers Producer Co. Ltd.',
+      district: 'Sangli',
+      taluka: 'Tasgaon',
+      hubLocation: 'Tasgaon Grape Cluster, Sangli',
+      products: ['Grapes', 'Raisins', 'Turmeric', 'Pomegranate'],
+      categories: ['Fruits', 'Commercial'],
+      aggregationCapacity: '1,200 Quintals/week',
+      trustScore: 98,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 380,
+      storageFacility: '1,200 MT Raisin Cold Storage & Washing Line',
+      storageType: 'Raisin Cold Storage (4°C)',
+      fpoFeesPct: 2.0,
+      transportRatePerKm: 1.25,
+      services: ['Green & Black Raisin Sorting', 'Nitrogen Flush Packets', 'Direct FMCG Brand Supply', 'Export Hub Link']
+    },
+
+    // --- JALGAON DISTRICT ---
+    {
+      id: 'fpo_jal_01',
+      userId: 'usr_fpo_jal_01',
+      name: 'Khandesh Banana Growers Farmer Producer Co. Ltd.',
+      district: 'Jalgaon',
+      taluka: 'Raver',
+      hubLocation: 'Raver / Burhanpur Border, Jalgaon',
+      products: ['Banana', 'Cotton', 'Maize', 'Pulses'],
+      categories: ['Fruits', 'Field Crops', 'Commercial'],
+      aggregationCapacity: '2,000 Quintals/week',
+      trustScore: 97,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 510,
+      storageFacility: '2,000 MT Ethylene Ripening & Export Packhouse',
+      storageType: 'Ethylene Ripening Chamber',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.15,
+      services: ['Cold Banana Rail Wagon Loading', 'Gulf Export Packaging', 'G-9 Variety Vacuum Packing']
+    },
+
+    // --- CHHATRAPATI SAMBHAJI NAGAR (AURANGABAD) ---
+    {
+      id: 'fpo_csn_01',
+      userId: 'usr_fpo_csn_01',
+      name: 'Ajanta Agro Farmers Producer Co. Ltd.',
+      district: 'Chhatrapati Sambhaji Nagar',
+      taluka: 'Gangapur',
+      hubLocation: 'Gangapur, Chhatrapati Sambhaji Nagar',
+      products: ['Sweet Lime', 'Cotton', 'Maize', 'Soybean'],
+      categories: ['Fruits', 'Commercial', 'Field Crops'],
+      aggregationCapacity: '800 Quintals/week',
+      trustScore: 94,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 195,
+      storageFacility: '800 MT Mosambi Grading & Waxing Unit',
+      storageType: 'Citrus Waxing & Silo Hub',
+      fpoFeesPct: 1.8,
+      transportRatePerKm: 1.2,
+      services: ['Mosambi Washing & Waxing Line', 'Cotton Baling Tie-up', 'Maize Starch Factory Direct Link']
+    },
+
+    // --- LATUR DISTRICT ---
+    {
+      id: 'fpo_lat_01',
+      userId: 'usr_fpo_lat_01',
+      name: 'Marathwada Pulses & Oilseeds Producer Co. Ltd.',
+      district: 'Latur',
+      taluka: 'Latur',
+      hubLocation: 'Latur Additional MIDC',
+      products: ['Soybean', 'Pigeonpea', 'Urad', 'Gram'],
+      categories: ['Field Crops'],
+      aggregationCapacity: '1,500 Quintals/week',
+      trustScore: 97,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 460,
+      storageFacility: '1,500 MT Modern Pulse Processing & Dal Mill Facility',
+      storageType: 'Pulse Processing Mill & Silo',
+      fpoFeesPct: 1.5,
+      transportRatePerKm: 1.15,
+      services: ['Dal Milling & Polishing', 'Soybean Solvent Crushing Contract', 'Moisture & Protein Testing Lab']
+    },
+
+    // --- NAGPUR & AMRAVATI DISTRICT ---
+    {
+      id: 'fpo_ngp_01',
+      userId: 'usr_fpo_ngp_01',
+      name: 'Orange City Citrus Growers Producer Co. Ltd.',
+      district: 'Nagpur',
+      taluka: 'Katol',
+      hubLocation: 'Katol / Warud Citrus Corridor, Nagpur',
+      products: ['Orange', 'Cotton', 'Soybean'],
+      categories: ['Fruits', 'Commercial', 'Field Crops'],
+      aggregationCapacity: '1,200 Quintals/week',
+      trustScore: 96,
+      verificationStatus: 'VERIFIED_FPC',
+      completedTrades: 310,
+      storageFacility: '1,200 MT Hydro-cooling & Orange Waxing Unit',
+      storageType: 'Hydro-cooling & Waxing Unit',
+      fpoFeesPct: 2.0,
+      transportRatePerKm: 1.25,
+      services: ['Nagpur Santra Export Packing', 'Orange Juice Pulping Tie-up', 'Direct North India Rail Transit']
+    }
+  ],
+
+  // Crop-specific FPO Memberships for Farmers (Multi-FPO affiliation)
+  cropMemberships: [
+    {
+      id: 'cm_01',
+      farmerId: 'usr_farmer_01',
+      farmerName: 'Sopanrao Patil',
+      crop: 'Onion',
+      cropCategory: 'Vegetables',
+      fpoId: 'fpo_01',
+      fpoName: 'Shivneri Agri Farmers Producer Co.',
+      status: 'ACTIVE',
+      enrolledDate: '2026-01-20T10:00:00.000Z',
+      notes: 'Primary membership for Rabi onion aggregation & chawl storage'
+    },
+    {
+      id: 'cm_02',
+      farmerId: 'usr_farmer_01',
+      farmerName: 'Sopanrao Patil',
+      crop: 'Tomato',
+      cropCategory: 'Vegetables',
+      fpoId: 'fpo_02',
+      fpoName: 'Junnar Taluka Agro Farmers FPC',
+      status: 'ACTIVE',
+      enrolledDate: '2026-02-10T10:00:00.000Z',
+      notes: 'Pre-cooling & crates for perishable tomato marketing'
+    },
+    {
+      id: 'cm_03',
+      farmerId: 'usr_farmer_01',
+      farmerName: 'Sopanrao Patil',
+      crop: 'Soybean',
+      cropCategory: 'Field Crops',
+      fpoId: 'fpo_03',
+      fpoName: 'Baramati Agro Vikas FPC',
+      status: 'ACTIVE',
+      enrolledDate: '2026-02-15T10:00:00.000Z',
+      notes: 'Dry grain silo & institutional crushing contract'
+    }
+  ],
+
+  // Farmer produce submissions (BEFORE aggregation)
+  produces: [
+    {
+      id: 'prod_01',
+      farmerId: 'usr_farmer_01',
+      farmerName: 'Sopanrao Patil',
+      farmerMobile: '9822012345',
+      commodity: 'Onion',
+      category: 'Vegetables',
+      quantity: 50,
+      unit: 'Quintal',
+      harvestDate: '2026-03-02',
+      location: 'Otur, Junnar, Pune',
+      assignedFpoId: 'usr_fpo_01',
+      assignedFpoName: 'Shivneri Agri Farmers Producer Co.',
+      qualityGrade: 'Grade A',
+      qualityConfidence: 92,
+      aiAnalysis: {
+        sizeUniformity: '94% (55-65mm)',
+        surfaceBlemishes: '2.1%',
+        skinCondition: 'Tunic intact, dry neck'
+      },
+      status: 'AGGREGATED', // SUBMITTED -> UNDER_REVIEW -> AGGREGATED -> SOLD -> PAID
+      lotId: 'lot_01',
+      submittedAt: '2026-03-03T09:30:00.000Z',
+      estimatedNetRealisation: 2560
+    },
+    {
+      id: 'prod_02',
+      farmerId: 'usr_farmer_02',
+      farmerName: 'Khanderao Thorat',
+      farmerMobile: '9822987654',
+      commodity: 'Onion',
+      category: 'Vegetables',
+      quantity: 70,
+      unit: 'Quintal',
+      harvestDate: '2026-03-01',
+      location: 'Alephata, Junnar, Pune',
+      assignedFpoId: 'usr_fpo_01',
+      assignedFpoName: 'Shivneri Agri Farmers Producer Co.',
+      qualityGrade: 'Grade A',
+      qualityConfidence: 90,
+      status: 'AGGREGATED',
+      lotId: 'lot_01',
+      submittedAt: '2026-03-02T11:00:00.000Z',
+      estimatedNetRealisation: 2560
+    }
+  ],
+
+  // FPO Aggregated Commercial Lots (Strictly FPO -> Buyer)
+  lots: [
+    {
+      id: 'lot_01',
+      lotNumber: 'LOT-PUN-ON-2026-01',
+      fpoId: 'usr_fpo_01',
+      fpoName: 'Shivneri Agri Farmers Producer Co.',
+      fpoTrustScore: 94,
+      commodity: 'Onion',
+      category: 'Vegetables',
+      totalQuantity: 120, // 50 from Sopanrao + 70 from Khanderao
+      unit: 'Quintal',
+      qualityGrade: 'Grade A',
+      qualityConfidence: 91,
+      expectedPricePerQuintal: 2850,
+      minAcceptablePrice: 2750,
+      pickupHub: 'Shivneri Hub, Narayangaon, Pune',
+      location: 'Pune',
+      status: 'MATCHED_OFFER_ACTIVE', // CREATED -> MATCHED_OFFER_ACTIVE -> DEAL_CONFIRMED -> IN_TRANSIT -> DELIVERED -> SETTLED
+      participatingFarmerIds: ['usr_farmer_01', 'usr_farmer_02'],
+      produceIds: ['prod_01', 'prod_02'],
+      createdAt: '2026-03-03T14:00:00.000Z'
+    },
+    {
+      id: 'lot_02',
+      lotNumber: 'LOT-PUN-TM-2026-04',
+      fpoId: 'usr_fpo_01',
+      fpoName: 'Shivneri Agri Farmers Producer Co.',
+      fpoTrustScore: 94,
+      commodity: 'Tomato',
+      category: 'Vegetables',
+      totalQuantity: 85,
+      unit: 'Quintal',
+      qualityGrade: 'Grade A',
+      qualityConfidence: 93,
+      expectedPricePerQuintal: 2150,
+      minAcceptablePrice: 2000,
+      pickupHub: 'Shivneri Hub, Narayangaon, Pune',
+      location: 'Pune',
+      status: 'OPEN_FOR_MATCHING',
+      participatingFarmerIds: ['usr_farmer_03'],
+      produceIds: ['prod_03'],
+      createdAt: '2026-03-04T10:00:00.000Z'
+    }
+  ],
+
+  // Verified Buyer Requirements (Buyer -> FPO)
+  requirements: [
+    {
+      id: 'req_01',
+      buyerId: 'usr_buyer_01',
+      buyerName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      buyerContact: 'Rajesh Mehta',
+      buyerTrustScore: 92,
+      commodity: 'Onion',
+      category: 'Vegetables',
+      quantity: 100,
+      unit: 'Quintal',
+      requiredGrade: 'Grade A',
+      deliveryLocation: 'Pune Market Yard, Gultekdi',
+      neededByDate: '2026-03-15',
+      targetPricePerQuintal: 2800,
+      maxPricePerQuintal: 2900,
+      status: 'OFFER_IN_PROGRESS', // ACTIVE -> OFFER_IN_PROGRESS -> FULFILLED
+      createdAt: '2026-03-03T16:00:00.000Z'
+    },
+    {
+      id: 'req_02',
+      buyerId: 'usr_buyer_01',
+      buyerName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      buyerContact: 'Rajesh Mehta',
+      buyerTrustScore: 92,
+      commodity: 'Tomato',
+      category: 'Vegetables',
+      quantity: 80,
+      unit: 'Quintal',
+      requiredGrade: 'Grade A',
+      deliveryLocation: 'Pune Market Yard, Gultekdi',
+      neededByDate: '2026-03-12',
+      targetPricePerQuintal: 2100,
+      maxPricePerQuintal: 2200,
+      status: 'ACTIVE',
+      createdAt: '2026-03-04T09:00:00.000Z'
+    }
+  ],
+
+  // Bidding / Offers between FPO and Buyer
+  offers: [
+    {
+      id: 'off_01',
+      lotId: 'lot_01',
+      lotNumber: 'LOT-PUN-ON-2026-01',
+      requirementId: 'req_01',
+      fpoId: 'usr_fpo_01',
+      fpoName: 'Shivneri Agri Farmers Producer Co.',
+      buyerId: 'usr_buyer_01',
+      buyerName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      commodity: 'Onion',
+      quantity: 100,
+      unit: 'Quintal',
+      qualityGrade: 'Grade A',
+      offeredPricePerQuintal: 2850,
+      buyerCounterPrice: 2820,
+      status: 'BUYER_COUNTERED', // OFFERED -> BUYER_COUNTERED -> ACCEPTED -> REJECTED -> CONVERTED_TO_DEAL
+      deliveryTerms: 'Ex-FPO Warehouse (FPO arranges transport, buyer reimburses ₹75/q)',
+      paymentTerms: '100% Escrow on dispatch, release upon APMC weighment verification',
+      createdAt: '2026-03-04T12:00:00.000Z',
+      updatedAt: '2026-03-04T15:30:00.000Z'
+    }
+  ],
+
+  // Finalized Transactions (FPO ↔ Buyer ↔ Farmer Payout)
+  transactions: [
+    {
+      id: 'txn_01',
+      dealNumber: 'DEAL-AGV-2026-8841',
+      lotId: 'lot_01',
+      lotNumber: 'LOT-PUN-ON-2026-01',
+      fpoId: 'usr_fpo_01',
+      fpoName: 'Shivneri Agri Farmers Producer Co.',
+      buyerId: 'usr_buyer_01',
+      buyerName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      commodity: 'Onion (Grade A)',
+      quantity: 100,
+      unit: 'Quintal',
+      agreedRatePerQuintal: 2820,
+      grossTotal: 282000,
+      logisticsCost: 7500, // ₹75/q
+      netToFpo: 274500,
+      farmerPayoutStatus: 'ESCROW_FUNDED', // ESCROW_FUNDED -> DISPATCHED -> DELIVERED -> PAID_TO_FARMERS
+      dealStatus: 'IN_TRANSIT', // CONFIRMED -> IN_TRANSIT -> DELIVERED -> COMPLETED
+      transporter: 'Mahalaxmi Agro Logistics (MH-14-CW-4921)',
+      trackingStatus: 'Loaded at Narayangaon Hub, In Transit to Gultekdi Mandi',
+      estimatedDelivery: 'Today, 6:00 PM',
+      payoutBreakdown: [
+        {
+          farmerId: 'usr_farmer_01',
+          farmerName: 'Sopanrao Patil',
+          quantitySupplied: 50,
+          ratePerQuintal: 2745,
+          totalPayable: 137250,
+          status: 'PENDING_RELEASE'
+        },
+        {
+          farmerId: 'usr_farmer_02',
+          farmerName: 'Khanderao Thorat',
+          quantitySupplied: 50,
+          ratePerQuintal: 2745,
+          totalPayable: 137250,
+          status: 'PENDING_RELEASE'
+        }
+      ],
+      createdAt: '2026-03-05T09:00:00.000Z'
+    }
+  ],
+
+  // Market Prices across Pune APMCs
+  marketPrices: [
+    {
+      id: 'mkt_01',
+      commodity: 'Onion',
+      category: 'Vegetables',
+      mandi: 'Pune Gultekdi',
+      district: 'Pune',
+      modalPrice: 2800,
+      minPrice: 2100,
+      maxPrice: 3200,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 4250,
+      trend: 'INCREASING',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_02',
+      commodity: 'Onion',
+      category: 'Vegetables',
+      mandi: 'Narayangaon',
+      district: 'Pune',
+      modalPrice: 2780,
+      minPrice: 2000,
+      maxPrice: 3150,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 3100,
+      trend: 'INCREASING',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_03',
+      commodity: 'Tomato',
+      category: 'Vegetables',
+      mandi: 'Narayangaon',
+      district: 'Pune',
+      modalPrice: 2100,
+      minPrice: 1600,
+      maxPrice: 2500,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 2800,
+      trend: 'STABLE',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_04',
+      commodity: 'Tomato',
+      category: 'Vegetables',
+      mandi: 'Pune Gultekdi',
+      district: 'Pune',
+      modalPrice: 2250,
+      minPrice: 1700,
+      maxPrice: 2650,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 3500,
+      trend: 'INCREASING',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_05',
+      commodity: 'Grapes',
+      category: 'Fruits',
+      mandi: 'Baramati',
+      district: 'Pune',
+      modalPrice: 6500,
+      minPrice: 5000,
+      maxPrice: 8500,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 1400,
+      trend: 'INCREASING',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_06',
+      commodity: 'Pomegranate',
+      category: 'Fruits',
+      mandi: 'Baramati',
+      district: 'Pune',
+      modalPrice: 8200,
+      minPrice: 6000,
+      maxPrice: 11000,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 950,
+      trend: 'STABLE',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_07',
+      commodity: 'Soybean',
+      category: 'Field Crops',
+      mandi: 'Khed',
+      district: 'Pune',
+      modalPrice: 4650,
+      minPrice: 4200,
+      maxPrice: 4950,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 1800,
+      trend: 'STABLE',
+      lastUpdated: 'Today'
+    },
+    {
+      id: 'mkt_08',
+      commodity: 'Sugarcane',
+      category: 'Field Crops',
+      mandi: 'Baramati',
+      district: 'Pune',
+      modalPrice: 3150,
+      minPrice: 3000,
+      maxPrice: 3300,
+      unit: '₹ / Quintal',
+      arrivalsQuintals: 5200,
+      trend: 'STABLE',
+      lastUpdated: 'Today'
+    }
+  ],
+
+  notifications: [
+    {
+      id: 'notif_01',
+      recipientId: 'usr_farmer_01',
+      title: 'Produce Aggregated by FPO',
+      message: 'Your 50 Quintals of Onion have been aggregated into Lot LOT-PUN-ON-2026-01 by Shivneri FPC.',
+      type: 'PRODUCE_AGGREGATED',
+      timestamp: '2026-03-03T14:15:00.000Z',
+      read: false
+    },
+    {
+      id: 'notif_02',
+      recipientId: 'usr_fpo_01',
+      title: 'Counter Offer Received from Buyer',
+      message: 'Sahyadri Fresh Wholesale offered ₹2,820/q for 100 Quintals Onion.',
+      type: 'OFFER_RECEIVED',
+      timestamp: '2026-03-04T15:30:00.000Z',
+      read: false
+    },
+    {
+      id: 'notif_03',
+      recipientId: 'usr_buyer_01',
+      title: 'Dispatch Initiated by FPO',
+      message: 'Lot LOT-PUN-ON-2026-01 is dispatched via Mahalaxmi Logistics to Pune Market Yard.',
+      type: 'DISPATCH_ALERT',
+      timestamp: '2026-03-05T09:15:00.000Z',
+      read: false
+    }
+  ],
+
+  // Operational Lifecycle: Dispute Management & Arbitration
+  disputes: [
+    {
+      id: 'disp_01',
+      lotId: 'lot_01',
+      lotNumber: 'LOT-PUN-ON-2026-01',
+      transactionId: 'txn_01',
+      raisedBy: 'usr_buyer_01',
+      raisedByName: 'Sahyadri Fresh Wholesale Pvt Ltd',
+      raisedByRole: 'BUYER',
+      againstUser: 'usr_fpo_01',
+      againstUserName: 'Shivneri Agri Farmers Producer Co.',
+      reason: 'Slight moisture variance on top layer bags (3% above Grade A spec)',
+      disputeCategory: 'QUALITY_MISMATCH',
+      evidenceUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+      claimedAmount: 6000,
+      status: 'OPEN', // OPEN, UNDER_ARBITRATION, RESOLVED_REFUND, RESOLVED_RELEASE, SETTLED
+      resolutionNotes: 'Under review by MSAMB Market Regulator. FPO submitted pre-dispatch grading certificate.',
+      arbitratedBy: 'usr_admin_01',
+      createdAt: '2026-03-05T16:45:00.000Z'
+    }
+  ],
+
+  // System Architecture: Admin & Regulatory Audit Logs
+  adminLogs: [
+    {
+      id: 'log_01',
+      action: 'FPO_KYC_VERIFIED',
+      targetId: 'fpo_01',
+      performedBy: 'Dr. Nitin Thorat (MSAMB)',
+      details: {
+        fpoName: 'Shivneri Agri Farmers Producer Co.',
+        auditDocuments: ['NABARD_REG_2018.pdf', 'FSSAI_CENTRAL_LICENSE.pdf'],
+        status: 'VERIFIED'
+      },
+      createdAt: '2026-01-10T11:30:00.000Z'
+    },
+    {
+      id: 'log_02',
+      action: 'AGMARKNET_FEED_SYNC',
+      targetId: 'mkt_sync_all',
+      performedBy: 'Agmarknet APMC Automated Poller',
+      details: {
+        mandisUpdated: ['Pune Gultekdi', 'Narayangaon', 'Baramati', 'Khed', 'Mumbai Vashi'],
+        commoditiesSynced: 12,
+        recordsProcessed: 148
+      },
+      createdAt: '2026-03-05T06:00:00.000Z'
+    }
+  ],
+  
+  // Farmer FPO Membership Switch / Join Requests
+  fpoMembershipRequests: [
+    {
+      id: 'fpreq_01',
+      farmerId: 'usr_farmer_02',
+      farmerName: 'Khanderao Thorat',
+      farmerMobile: '9822987654',
+      farmerVillage: 'Alephata',
+      farmerTaluka: 'Junnar',
+      farmerDistrict: 'Pune',
+      currentFpoId: 'fpo_02',
+      currentFpoName: 'Junnar Taluka Agro Farmers FPC',
+      targetFpoId: 'usr_fpo_01',
+      targetFpoName: 'Shivneri Agri Farmers Producer Co.',
+      reason: 'Wants to access the 500 MT ventilated onion chawl storage at Narayangaon Hub for summer rabi crop.',
+      status: 'PENDING', // PENDING, ACCEPTED, REJECTED, CANCELLED
+      requestedAt: '2026-03-04T11:20:00.000Z'
+    }
+  ]
+};
+
+// Database state management
+class DatabaseStore {
+  constructor() {
+    this.supabaseConnected = false;
+    this.data = this.loadData();
+    this.initSupabaseSync();
+  }
+
+  async initSupabaseSync() {
+    try {
+      console.log('[Database] Connecting and synchronizing with Supabase...');
+      const remoteData = await supabaseBridge.fetchAllCollections();
+      let hasData = false;
+      for (const [coll, items] of Object.entries(remoteData)) {
+        if (items && items.length > 0) {
+          if (coll === 'users') {
+            // Merge so usr_admin_01 and essential default roles exist
+            const remoteIds = new Set(items.map(u => u.id));
+            const seedUsers = INITIAL_DB.users.filter(u => !remoteIds.has(u.id));
+            this.data[coll] = [...items, ...seedUsers];
+          } else {
+            this.data[coll] = items;
+          }
+          hasData = true;
+        }
+      }
+      if (hasData) {
+        this.supabaseConnected = true;
+        this.saveData(this.data);
+        console.log('[Database] Synchronized live data from Supabase successfully.');
+      } else {
+        console.log('[Database] Supabase connected. Seeding remote database with initial records...');
+        await supabaseBridge.resetSupabaseTables(INITIAL_DB);
+        this.supabaseConnected = true;
+      }
+    } catch (err) {
+      console.warn('[Database] Could not sync with Supabase on startup, using local fallback:', err.message);
+    }
+  }
+
+  loadData() {
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const raw = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(raw);
+      }
+    } catch (err) {
+      console.error('Error reading database file, loading default seeds:', err);
+    }
+    // Write initial database file
+    this.saveData(INITIAL_DB);
+    return JSON.parse(JSON.stringify(INITIAL_DB));
+  }
+
+  saveData(dataToSave = this.data) {
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2), 'utf8');
+    } catch (err) {
+      console.error('Error saving database to file:', err);
+    }
+  }
+
+  // Generic collection helpers
+  getCollection(name) {
+    return this.data[name] || [];
+  }
+
+  findById(name, id) {
+    const coll = this.getCollection(name);
+    return coll.find(item => item.id === id);
+  }
+
+  insert(name, item) {
+    if (!this.data[name]) {
+      this.data[name] = [];
+    }
+    const record = {
+      id: `${name.slice(0, 4)}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString(),
+      ...item
+    };
+    this.data[name].unshift(record);
+    this.saveData();
+
+    // Asynchronously synchronize with Supabase table
+    supabaseBridge.syncRecord(name, record).catch(err => {
+      console.error(`[Supabase] Background sync error on insert (${name}):`, err.message);
+    });
+
+    return record;
+  }
+
+  updateById(name, id, updates) {
+    const coll = this.getCollection(name);
+    const index = coll.findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.data[name][index] = {
+        ...this.data[name][index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      const updatedRecord = this.data[name][index];
+      this.saveData();
+
+      // Asynchronously synchronize with Supabase table
+      supabaseBridge.syncRecord(name, updatedRecord).catch(err => {
+        console.error(`[Supabase] Background sync error on update (${name}):`, err.message);
+      });
+
+      return updatedRecord;
+    }
+    return null;
+  }
+
+  deleteById(name, id) {
+    if (!this.data[name]) return false;
+    const initialLen = this.data[name].length;
+    this.data[name] = this.data[name].filter(item => item.id !== id);
+    if (this.data[name].length !== initialLen) {
+      this.saveData();
+
+      // Asynchronously delete from Supabase table
+      supabaseBridge.deleteRecord(name, id).catch(err => {
+        console.error(`[Supabase] Background sync error on delete (${name}):`, err.message);
+      });
+
+      return true;
+    }
+    return false;
+  }
+
+  resetToSeed() {
+    this.data = JSON.parse(JSON.stringify(INITIAL_DB));
+    this.saveData();
+    supabaseBridge.resetSupabaseTables(INITIAL_DB).catch(err => {
+      console.error('[Supabase] Error resetting remote tables:', err.message);
+    });
+    return this.data;
+  }
+
+  getStatus() {
+    return {
+      connected: this.supabaseConnected,
+      projectId: 'syguiyerrztsnstybxep',
+      supabaseUrl: supabaseBridge.SUPABASE_URL,
+      collections: Object.fromEntries(
+        Object.entries(this.data).map(([k, v]) => [k, Array.isArray(v) ? v.length : 0])
+      )
+    };
+  }
+}
+
+const db = new DatabaseStore();
+
+module.exports = db;
+
