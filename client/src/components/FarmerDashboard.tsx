@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 
 const CROP_SAMPLE_IMAGES: Record<string, string> = {
-  onion: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+  onion: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=600',
   tomato: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600',
   grapes: 'https://images.unsplash.com/photo-1596363505729-4190a9506133?w=600',
   pomegranate: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600',

@@ -944,7 +944,7 @@ app.post('/api/disputes', (req, res) => {
     againstUserName: againstUserName || 'FPO / Supplier',
     reason,
     disputeCategory: disputeCategory || 'QUALITY_MISMATCH',
-    evidenceUrl: evidenceUrl || 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+    evidenceUrl: evidenceUrl || 'https://images.unsplash.com/photo-1508747703725-719777637510?w=600',
     claimedAmount: Number(claimedAmount) || 5000,
     status: 'OPEN',
     resolutionNotes: 'Dispute registered in the AgroVision state arbitration portal. Under regulatory review.',

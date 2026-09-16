@@ -972,7 +972,7 @@ const INITIAL_DB = {
       againstUserName: 'Shivneri Agri Farmers Producer Co.',
       reason: 'Slight moisture variance on top layer bags (3% above Grade A spec)',
       disputeCategory: 'QUALITY_MISMATCH',
-      evidenceUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600',
+      evidenceUrl: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=600',
       claimedAmount: 6000,
       status: 'OPEN', // OPEN, UNDER_ARBITRATION, RESOLVED_REFUND, RESOLVED_RELEASE, SETTLED
       resolutionNotes: 'Under review by MSAMB Market Regulator. FPO submitted pre-dispatch grading certificate.',
