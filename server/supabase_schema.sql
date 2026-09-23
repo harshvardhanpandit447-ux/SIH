@@ -283,6 +283,39 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_logs' AND policyname = 'Allow all access to admin_logs') THEN
     CREATE POLICY "Allow all access to admin_logs" ON admin_logs FOR ALL USING (true) WITH CHECK (true);
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'disputes' AND policyname = 'Allow all access to disputes') THEN
+    CREATE POLICY "Allow all access to disputes" ON disputes FOR ALL USING (true) WITH CHECK (true);
+  END IF;
 END $$;
 
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+
+-- Enable REPLICA IDENTITY FULL on all tables for complete Realtime update/delete payloads
+ALTER TABLE users REPLICA IDENTITY FULL;
+ALTER TABLE fpos REPLICA IDENTITY FULL;
+ALTER TABLE crop_memberships REPLICA IDENTITY FULL;
+ALTER TABLE produces REPLICA IDENTITY FULL;
+ALTER TABLE lots REPLICA IDENTITY FULL;
+ALTER TABLE requirements REPLICA IDENTITY FULL;
+ALTER TABLE offers REPLICA IDENTITY FULL;
+ALTER TABLE transactions REPLICA IDENTITY FULL;
+ALTER TABLE market_prices REPLICA IDENTITY FULL;
+ALTER TABLE notifications REPLICA IDENTITY FULL;
+ALTER TABLE disputes REPLICA IDENTITY FULL;
+ALTER TABLE admin_logs REPLICA IDENTITY FULL;
+
+-- Add all tables to supabase_realtime publication
+ALTER PUBLICATION supabase_realtime ADD TABLE 
+  users, 
+  fpos, 
+  crop_memberships, 
+  produces, 
+  lots, 
+  requirements, 
+  offers, 
+  transactions, 
+  market_prices, 
+  notifications, 
+  disputes, 
+  admin_logs;
+

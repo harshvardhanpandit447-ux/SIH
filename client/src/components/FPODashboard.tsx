@@ -9,6 +9,7 @@ import {
   tGrade
 } from '../utils/translationHelper';
 import { API_BASE } from '../utils/apiConfig';
+import { supabase } from '../utils/supabaseClient';
 import {
   Package,
   Layers,
@@ -45,6 +46,78 @@ export const FPODashboard: React.FC = () => {
   useEffect(() => {
     fetchFpoData();
   }, []);
+
+  // Supabase Realtime Live Synchronization
+  useEffect(() => {
+    const fpoId = user?.id || 'usr_fpo_01';
+    const channel = supabase
+      .channel(`fpo-realtime-${fpoId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'produces' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO produces change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lots' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO lots change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'offers' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO offers change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO transactions change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crop_memberships' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO crop memberships change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'disputes' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO disputes change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        (payload) => {
+          console.log('[Supabase Realtime] FPO notifications change:', payload.eventType);
+          fetchFpoData();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Supabase Realtime] FPO channel connected');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const fetchFpoData = async () => {
     try {

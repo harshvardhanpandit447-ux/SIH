@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { API_BASE } from '../utils/apiConfig';
+import { supabase } from '../utils/supabaseClient';
 import {
   tEntity,
   tCrop,
@@ -130,6 +131,54 @@ export const FarmerDashboard: React.FC = () => {
     runAiQualityTest('onion');
     fetchRankings('Onion', 50, 0);
   }, []);
+
+  // Supabase Realtime Live Synchronization
+  useEffect(() => {
+    const farmerId = user?.id || 'usr_farmer_01';
+    const channel = supabase
+      .channel(`farmer-realtime-${farmerId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'produces' },
+        (payload) => {
+          console.log('[Supabase Realtime] Produces change:', payload.eventType);
+          fetchFarmerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crop_memberships' },
+        (payload) => {
+          console.log('[Supabase Realtime] Crop memberships change:', payload.eventType);
+          fetchCropMemberships();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lots' },
+        (payload) => {
+          console.log('[Supabase Realtime] Lots change:', payload.eventType);
+          fetchFarmerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        (payload) => {
+          console.log('[Supabase Realtime] Notifications change:', payload.eventType);
+          fetchFarmerData();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Supabase Realtime] Farmer channel connected');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   // Sync assigned FPO whenever commodity changes in modal
   useEffect(() => {

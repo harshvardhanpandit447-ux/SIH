@@ -25,54 +25,6 @@
       "department": null
     },
     {
-      "id": "usr_fpo_01",
-      "name": "Shivneri Agri Farmers Producer Co.",
-      "email": "fpo@agrovision.in",
-      "mobile": "9850123456",
-      "role": "FPO",
-      "password": "fpo123",
-      "village": null,
-      "taluka": "Junnar",
-      "district": "Pune",
-      "state": "Maharashtra",
-      "contactPerson": "Sachin Darekar (CEO)",
-      "registrationNumber": "U01409PN2018PTC178942",
-      "trustScore": 94,
-      "aggregationCapacity": "500 Quintals/week",
-      "warehouseLocation": "Narayangaon Hub, Pune-Nashik Highway",
-      "verified": true,
-      "gstin": null,
-      "city": null,
-      "buyerType": null,
-      "createdAt": "2026-01-10T10:00:00+00:00",
-      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
-      "department": null
-    },
-    {
-      "id": "usr_buyer_01",
-      "name": "Sahyadri Fresh Wholesale Pvt Ltd",
-      "email": "buyer@agrovision.in",
-      "mobile": "9890123456",
-      "role": "BUYER",
-      "password": "buyer123",
-      "village": null,
-      "taluka": null,
-      "district": "Pune",
-      "state": "Maharashtra",
-      "contactPerson": "Rajesh Mehta",
-      "registrationNumber": null,
-      "trustScore": 92,
-      "aggregationCapacity": null,
-      "warehouseLocation": null,
-      "verified": false,
-      "gstin": "27AABCS1429B1Z8",
-      "city": "Pune",
-      "buyerType": "Institutional Wholesaler & Supermarket Supplier",
-      "createdAt": "2026-01-12T10:00:00+00:00",
-      "updatedAt": "2026-09-09T14:31:05.18796+00:00",
-      "department": null
-    },
-    {
       "id": "user_1788978745297_175",
       "name": "Harshvardhan Pandit",
       "email": "harshvardhanpandit447@gmail.com",
@@ -121,6 +73,78 @@
       "department": null
     },
     {
+      "id": "user_1789545697913_430",
+      "name": "Harshvardhan Pandit",
+      "email": "vatanebhau0@gmail.com",
+      "mobile": "9093574892",
+      "role": "FARMER",
+      "password": "Ganesh@278",
+      "village": "Borale",
+      "taluka": "Junnar",
+      "district": "Pune",
+      "state": "Maharashtra",
+      "contactPerson": null,
+      "registrationNumber": "",
+      "trustScore": 88,
+      "aggregationCapacity": null,
+      "warehouseLocation": null,
+      "verified": false,
+      "gstin": "",
+      "city": null,
+      "buyerType": null,
+      "createdAt": "2026-09-16T08:01:37.913+00:00",
+      "updatedAt": "2026-09-16T08:01:39.299001+00:00",
+      "department": null
+    },
+    {
+      "id": "usr_fpo_01",
+      "name": "Shivneri Agri Farmers Producer Co.",
+      "email": "fpo@agrovision.in",
+      "mobile": "9850123456",
+      "role": "FPO",
+      "password": "fpo123",
+      "village": null,
+      "taluka": "Junnar",
+      "district": "Pune",
+      "state": "Maharashtra",
+      "contactPerson": "Sachin Darekar (CEO)",
+      "registrationNumber": "U01409PN2018PTC178942",
+      "trustScore": 96,
+      "aggregationCapacity": "500 Quintals/week",
+      "warehouseLocation": "Narayangaon Hub, Pune-Nashik Highway",
+      "verified": true,
+      "gstin": null,
+      "city": null,
+      "buyerType": null,
+      "createdAt": "2026-01-10T10:00:00+00:00",
+      "updatedAt": "2026-09-16T09:06:52.326+00:00",
+      "department": null
+    },
+    {
+      "id": "usr_buyer_01",
+      "name": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "email": "buyer@agrovision.in",
+      "mobile": "9890123456",
+      "role": "BUYER",
+      "password": "buyer123",
+      "village": null,
+      "taluka": null,
+      "district": "Pune",
+      "state": "Maharashtra",
+      "contactPerson": "Rajesh Mehta",
+      "registrationNumber": null,
+      "trustScore": 96,
+      "aggregationCapacity": null,
+      "warehouseLocation": null,
+      "verified": true,
+      "gstin": "27AABCS1429B1Z8",
+      "city": "Pune",
+      "buyerType": "Institutional Wholesaler & Supermarket Supplier",
+      "createdAt": "2026-01-12T10:00:00+00:00",
+      "updatedAt": "2026-09-16T09:06:58.403+00:00",
+      "department": null
+    },
+    {
       "id": "usr_admin_01",
       "name": "Maharashtra Agri Marketing Board (MSAMB)",
       "contactPerson": "Dr. Nitin Thorat (Director of Marketing)",
@@ -136,31 +160,6 @@
     }
   ],
   "fpos": [
-    {
-      "id": "fpo_01",
-      "userId": "usr_fpo_01",
-      "name": "Shivneri Agri Farmers Producer Co.",
-      "district": "Pune",
-      "taluka": "Junnar",
-      "hubLocation": "Narayangaon, Junnar",
-      "products": [
-        "Onion",
-        "Tomato",
-        "Grapes",
-        "Vegetables"
-      ],
-      "categories": [
-        "Vegetables",
-        "Fruits"
-      ],
-      "aggregationCapacity": "500 Quintals/week",
-      "trustScore": 94,
-      "verificationStatus": "VERIFIED_FPC",
-      "completedTrades": 128,
-      "storageFacility": "500 MT Ventilated Onion Chawl & Cold Hub",
-      "createdAt": "2026-09-09T14:31:05.18796+00:00",
-      "updatedAt": "2026-09-09T14:31:05.18796+00:00"
-    },
     {
       "id": "fpo_02",
       "userId": null,
@@ -259,6 +258,31 @@
       "storageFacility": "Temperature Controlled Hub",
       "createdAt": "2026-09-09T14:31:05.18796+00:00",
       "updatedAt": "2026-09-09T14:31:05.18796+00:00"
+    },
+    {
+      "id": "fpo_01",
+      "userId": "usr_fpo_01",
+      "name": "Shivneri Agri Farmers Producer Co.",
+      "district": "Pune",
+      "taluka": "Junnar",
+      "hubLocation": "Narayangaon, Junnar",
+      "products": [
+        "Onion",
+        "Tomato",
+        "Grapes",
+        "Vegetables"
+      ],
+      "categories": [
+        "Vegetables",
+        "Fruits"
+      ],
+      "aggregationCapacity": "500 Quintals/week",
+      "trustScore": 96,
+      "verificationStatus": "VERIFIED_FPC",
+      "completedTrades": 128,
+      "storageFacility": "500 MT Ventilated Onion Chawl & Cold Hub",
+      "createdAt": "2026-09-09T14:31:05.18796+00:00",
+      "updatedAt": "2026-09-16T09:06:52.37+00:00"
     }
   ],
   "produces": [
@@ -367,6 +391,32 @@
       ],
       "createdAt": "2026-03-03T14:00:00+00:00",
       "updatedAt": "2026-09-09T14:50:33.825+00:00"
+    },
+    {
+      "id": "lots_1789548038728_189",
+      "lotNumber": "LOT-PUN-PO-8727",
+      "fpoId": "usr_fpo_01",
+      "fpoName": "Shivneri Agri Farmers Producer Co.",
+      "fpoTrustScore": 94,
+      "commodity": "Pomegranate",
+      "category": "Vegetables",
+      "totalQuantity": 70,
+      "unit": "Quintal",
+      "qualityGrade": "Grade A",
+      "qualityConfidence": 93,
+      "expectedPricePerQuintal": 2850,
+      "minAcceptablePrice": 2750,
+      "pickupHub": "Narayangaon FPO Aggregation Center, Pune",
+      "location": "Pune",
+      "status": "OPEN_FOR_MATCHING",
+      "participatingFarmerIds": [
+        null
+      ],
+      "produceIds": [
+        "prod_02"
+      ],
+      "createdAt": "2026-09-16T08:40:38.728+00:00",
+      "updatedAt": "2026-09-16T08:40:40.14685+00:00"
     }
   ],
   "requirements": [
@@ -502,6 +552,25 @@
       "status": "ACTIVE",
       "createdAt": "2026-09-11T17:12:38.341+00:00",
       "updatedAt": "2026-09-11T17:12:38.413361+00:00"
+    },
+    {
+      "id": "requ_1789548176340_624",
+      "buyerId": "usr_buyer_01",
+      "buyerName": "Sahyadri Fresh Wholesale Pvt Ltd",
+      "buyerContact": "Rajesh Mehta",
+      "buyerTrustScore": 92,
+      "commodity": "Pomegranate",
+      "category": "Vegetables",
+      "quantity": 100,
+      "unit": "Quintal",
+      "requiredGrade": "Grade A",
+      "deliveryLocation": "Pune Market Yard, Gultekdi",
+      "neededByDate": "2026-03-20",
+      "targetPricePerQuintal": 2800,
+      "maxPricePerQuintal": 2900,
+      "status": "ACTIVE",
+      "createdAt": "2026-09-16T08:42:56.34+00:00",
+      "updatedAt": "2026-09-16T08:42:57.231206+00:00"
     }
   ],
   "offers": [
@@ -794,6 +863,16 @@
       "read": false,
       "timestamp": "2026-09-10T16:33:47.224946+00:00",
       "createdAt": "2026-09-10T16:33:46.735+00:00"
+    },
+    {
+      "id": "noti_1789548038766_822",
+      "recipientId": null,
+      "title": "Produce Aggregated into Lot",
+      "message": "Your produce has been bundled into Commercial LOT-PUN-PO-8727 by your FPO.",
+      "type": "PRODUCE_AGGREGATED",
+      "read": false,
+      "timestamp": "2026-09-16T08:40:40.146848+00:00",
+      "createdAt": "2026-09-16T08:40:38.766+00:00"
     }
   ],
   "fpoMembershipRequests": [
@@ -886,6 +965,41 @@
       "enrolledDate": "2026-09-11T16:08:30.680Z",
       "notes": "Controlled atmosphere cold storage enrollment",
       "updatedAt": "2026-09-11T17:06:36.233Z"
+    }
+  ],
+  "adminLogs": [
+    {
+      "id": "admi_1789549612374_281",
+      "action": "USER_KYC_STATUS_CHANGED",
+      "targetId": "usr_fpo_01",
+      "performedBy": "Dr. Nitin Thorat (MSAMB)",
+      "details": {
+        "verified": true,
+        "trustScore": 96
+      },
+      "createdAt": "2026-09-16T09:06:52.374+00:00"
+    },
+    {
+      "id": "admi_1789549615590_249",
+      "action": "USER_KYC_STATUS_CHANGED",
+      "targetId": "usr_buyer_01",
+      "performedBy": "Dr. Nitin Thorat (MSAMB)",
+      "details": {
+        "verified": true,
+        "trustScore": 96
+      },
+      "createdAt": "2026-09-16T09:06:55.59+00:00"
+    },
+    {
+      "id": "admi_1789549618413_376",
+      "action": "USER_KYC_STATUS_CHANGED",
+      "targetId": "usr_buyer_01",
+      "performedBy": "Dr. Nitin Thorat (MSAMB)",
+      "details": {
+        "verified": true,
+        "trustScore": 96
+      },
+      "createdAt": "2026-09-16T09:06:58.414+00:00"
     }
   ]
 }

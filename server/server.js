@@ -32,6 +32,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serverless Sync Assurance Middleware: ensure Supabase remote sync completes before freeze
+app.use((req, res, next) => {
+  const originalJson = res.json.bind(res);
+  res.json = async (body) => {
+    try {
+      if (db && typeof db.waitForSync === 'function') {
+        await db.waitForSync();
+      }
+    } catch (syncErr) {
+      console.warn('[Supabase Sync Warning]:', syncErr.message);
+    }
+    return originalJson(body);
+  };
+  next();
+});
+
 /* ==========================================================================
    HEALTH & SYSTEM
    ========================================================================== */

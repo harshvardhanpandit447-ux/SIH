@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { API_BASE } from '../utils/apiConfig';
+import { supabase } from '../utils/supabaseClient';
 import {
   tEntity,
   tMandi,
@@ -75,6 +76,69 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAdminData();
+  }, []);
+
+  // Supabase Realtime Live Synchronization
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'users' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin users change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'disputes' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin disputes change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'admin_logs' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin logs change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lots' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin lots change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'offers' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin offers change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        (payload) => {
+          console.log('[Supabase Realtime] Admin transactions change:', payload.eventType);
+          fetchAdminData();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Supabase Realtime] Admin channel connected');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchAdminData = async () => {

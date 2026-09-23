@@ -1034,8 +1034,9 @@ const INITIAL_DB = {
 class DatabaseStore {
   constructor() {
     this.supabaseConnected = false;
+    this.pendingSyncs = [];
     this.data = this.loadData();
-    this.initSupabaseSync();
+    this.initPromise = this.initSupabaseSync();
   }
 
   async initSupabaseSync() {
@@ -1115,9 +1116,10 @@ class DatabaseStore {
     this.saveData();
 
     // Asynchronously synchronize with Supabase table
-    supabaseBridge.syncRecord(name, record).catch(err => {
+    const syncPromise = supabaseBridge.syncRecord(name, record).catch(err => {
       console.error(`[Supabase] Background sync error on insert (${name}):`, err.message);
     });
+    this.pendingSyncs.push(syncPromise);
 
     return record;
   }
@@ -1135,9 +1137,10 @@ class DatabaseStore {
       this.saveData();
 
       // Asynchronously synchronize with Supabase table
-      supabaseBridge.syncRecord(name, updatedRecord).catch(err => {
+      const syncPromise = supabaseBridge.syncRecord(name, updatedRecord).catch(err => {
         console.error(`[Supabase] Background sync error on update (${name}):`, err.message);
       });
+      this.pendingSyncs.push(syncPromise);
 
       return updatedRecord;
     }
@@ -1152,13 +1155,22 @@ class DatabaseStore {
       this.saveData();
 
       // Asynchronously delete from Supabase table
-      supabaseBridge.deleteRecord(name, id).catch(err => {
+      const syncPromise = supabaseBridge.deleteRecord(name, id).catch(err => {
         console.error(`[Supabase] Background sync error on delete (${name}):`, err.message);
       });
+      this.pendingSyncs.push(syncPromise);
 
       return true;
     }
     return false;
+  }
+
+  async waitForSync() {
+    if (this.pendingSyncs && this.pendingSyncs.length > 0) {
+      const pending = this.pendingSyncs;
+      this.pendingSyncs = [];
+      await Promise.allSettled(pending);
+    }
   }
 
   resetToSeed() {

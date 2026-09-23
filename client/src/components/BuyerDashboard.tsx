@@ -6,6 +6,7 @@ import {
   tMandi
 } from '../utils/translationHelper';
 import { API_BASE } from '../utils/apiConfig';
+import { supabase } from '../utils/supabaseClient';
 import {
   ShoppingCart,
   PlusCircle,
@@ -52,6 +53,70 @@ export const BuyerDashboard: React.FC = () => {
   useEffect(() => {
     fetchBuyerData();
   }, []);
+
+  // Supabase Realtime Live Synchronization
+  useEffect(() => {
+    const buyerId = user?.id || 'usr_buyer_01';
+    const channel = supabase
+      .channel(`buyer-realtime-${buyerId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'requirements' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer requirements change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'offers' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer offers change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer transactions change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'disputes' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer disputes change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lots' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer lots change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        (payload) => {
+          console.log('[Supabase Realtime] Buyer notifications change:', payload.eventType);
+          fetchBuyerData();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Supabase Realtime] Buyer channel connected');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const fetchBuyerData = async () => {
     try {
