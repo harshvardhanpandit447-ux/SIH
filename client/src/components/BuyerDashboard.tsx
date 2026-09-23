@@ -156,7 +156,7 @@ export const BuyerDashboard: React.FC = () => {
           reason: disputeReason,
           disputeCategory,
           claimedAmount: Number(disputeClaimAmount),
-          evidenceUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600'
+          evidenceUrl: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=600'
         })
       });
       const result = await res.json();
